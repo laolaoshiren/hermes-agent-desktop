@@ -1,6 +1,6 @@
 {
   "name": "hermes-agent-desktop",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "private": true,
   "type": "module",
   "main": "apps/desktop/electron/dist/main/index.js",
@@ -35,8 +35,8 @@
     "dist:linux": "rimraf release && npm run build && electron-builder --linux AppImage tar.gz --publish never"
   },
   "dependencies": {
-    "@product/runtime-manager": "0.1.3",
-    "@product/shared": "0.1.3"
+    "@product/runtime-manager": "0.1.4",
+    "@product/shared": "0.1.4"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
@@ -49,7 +49,7 @@
   },
   "build": {
     "appId": "com.laolaoshiren.hermesagentdesktop",
-    "productName": "Hermes Agent Console",
+    "productName": "Hermes Agent Desktop",
     "electronVersion": "37.2.0",
     "asar": true,
     "asarUnpack": [

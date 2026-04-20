@@ -5,6 +5,7 @@ Thumbs.db
 .product-data
 .runtime-downloads
 runtime/python
+vendor/hermes-agent/build
 .smoke-data
 release
 .package-verify-release*

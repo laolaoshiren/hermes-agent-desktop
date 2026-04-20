@@ -18,8 +18,11 @@ const windowsEmbeddedPythonArchive = join(
   `python-${windowsEmbeddedPythonVersion}-embed-amd64.zip`
 )
 const pythonExeCandidates = isWindows
-  ? [join(runtimeRoot, 'python.exe'), join(runtimeRoot, 'Scripts', 'python.exe')]
+  ? [join(runtimeRoot, 'python.exe')]
   : [join(runtimeRoot, 'bin', 'python3')]
+const windowsPortablePythonPathFile = join(runtimeRoot, 'python311._pth')
+const windowsVenvMarkerFile = join(runtimeRoot, 'pyvenv.cfg')
+const windowsVenvPythonExe = join(runtimeRoot, 'Scripts', 'python.exe')
 
 let pythonExe = resolvePythonExecutable()
 
@@ -88,7 +91,7 @@ async function downloadFile(url, targetPath) {
 }
 
 async function ensureWindowsEmbedPathFile() {
-  const pthPath = join(runtimeRoot, 'python311._pth')
+  const pthPath = windowsPortablePythonPathFile
   if (!existsSync(pthPath)) {
     return
   }
@@ -97,44 +100,55 @@ async function ensureWindowsEmbedPathFile() {
   await writeFile(pthPath, content, 'utf8')
 }
 
+function hasPortableWindowsRuntime() {
+  return (
+    existsSync(join(runtimeRoot, 'python.exe')) &&
+    existsSync(windowsPortablePythonPathFile) &&
+    !existsSync(windowsVenvMarkerFile) &&
+    !existsSync(windowsVenvPythonExe)
+  )
+}
+
+async function ensurePortableWindowsRuntime() {
+  await rm(runtimeRoot, { recursive: true, force: true })
+
+  if (!existsSync(windowsEmbeddedPythonArchive)) {
+    await downloadFile(windowsEmbeddedPythonUrl, windowsEmbeddedPythonArchive)
+  }
+
+  await mkdir(runtimeRoot, { recursive: true })
+  await run('powershell', [
+    '-NoProfile',
+    '-Command',
+    `Expand-Archive -LiteralPath '${windowsEmbeddedPythonArchive.replace(/'/g, "''")}' -DestinationPath '${runtimeRoot.replace(/'/g, "''")}' -Force`
+  ])
+}
+
 async function ensurePythonRuntime() {
-  if (existsSync(resolvePythonExecutable())) {
-    pythonExe = resolvePythonExecutable()
+  if (isWindows) {
+    if (!hasPortableWindowsRuntime()) {
+      try {
+        await ensurePortableWindowsRuntime()
+      } catch (downloadError) {
+        throw new Error(
+          [
+            'Windows runtime is missing or non-portable and embedded bootstrap failed.',
+            `Required runtime: ${windowsEmbeddedPythonUrl}`,
+            `download error: ${downloadError instanceof Error ? downloadError.message : String(downloadError)}`
+          ].join('\n')
+        )
+      }
+    }
+
+    pythonExe = join(runtimeRoot, 'python.exe')
+    if (!existsSync(pythonExe)) {
+      throw new Error(`Portable Windows Python runtime is still missing: ${pythonExe}`)
+    }
+
     return
   }
 
-  if (isWindows) {
-    try {
-      await run('py', ['-3.11', '-m', 'venv', runtimeRoot])
-    } catch (pyLauncherError) {
-      try {
-        await run('python', ['-m', 'venv', runtimeRoot])
-      } catch (pythonError) {
-        try {
-          await rm(runtimeRoot, { recursive: true, force: true })
-          await downloadFile(windowsEmbeddedPythonUrl, windowsEmbeddedPythonArchive)
-          await mkdir(runtimeRoot, { recursive: true })
-          await run('powershell', [
-            '-NoProfile',
-            '-Command',
-            `Expand-Archive -LiteralPath '${windowsEmbeddedPythonArchive.replace(/'/g, "''")}' -DestinationPath '${runtimeRoot.replace(/'/g, "''")}' -Force`
-          ])
-        } catch (downloadError) {
-          throw new Error(
-            [
-              'Windows runtime is missing and automatic bootstrap failed.',
-              `Tried: py -3.11 -m venv ${runtimeRoot}`,
-              `Fallback: python -m venv ${runtimeRoot}`,
-              `Fallback download: ${windowsEmbeddedPythonUrl}`,
-              `py error: ${pyLauncherError instanceof Error ? pyLauncherError.message : String(pyLauncherError)}`,
-              `python error: ${pythonError instanceof Error ? pythonError.message : String(pythonError)}`,
-              `download error: ${downloadError instanceof Error ? downloadError.message : String(downloadError)}`
-            ].join('\n')
-          )
-        }
-      }
-    }
-  } else {
+  if (!existsSync(resolvePythonExecutable())) {
     await run('python3', ['-m', 'venv', runtimeRoot])
   }
 

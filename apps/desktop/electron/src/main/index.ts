@@ -71,7 +71,7 @@ async function createWindow() {
     height: 960,
     minWidth: 1120,
     minHeight: 760,
-    backgroundColor: '#f2ecdf',
+    backgroundColor: '#08131d',
     title: DEFAULT_BRAND.productName,
     ...(windowIcon ? { icon: windowIcon } : {}),
     webPreferences: {

@@ -33,6 +33,7 @@ interface ResolvedRuntimeLayout {
   sitePackagesDir: string
   hermesRoot: string
   hermesWebDist: string | null
+  layoutError: string | null
 }
 
 interface ProcessRecord {
@@ -145,6 +146,21 @@ function uniquePaths(values: string[]) {
   return [...new Set(values)]
 }
 
+function isPackagedWindowsRuntimeRoot(root: string) {
+  return root.toLowerCase().includes('app.asar.unpacked')
+}
+
+function createInvalidBundledWindowsRuntimeError(
+  runtimeRoot: string,
+  issues: string[],
+) {
+  return [
+    `Invalid bundled Windows Python runtime at ${runtimeRoot}.`,
+    'Packaged Hermes builds must ship the portable embedded Python runtime.',
+    `Layout issues: ${issues.join('; ')}`
+  ].join(' ')
+}
+
 function resolveRuntimeLayout(options: RuntimeManagerOptions): ResolvedRuntimeLayout {
   const cwd = process.cwd()
   const roots = uniquePaths(
@@ -153,21 +169,72 @@ function resolveRuntimeLayout(options: RuntimeManagerOptions): ResolvedRuntimeLa
       .flatMap((root) => [root, join(root, 'app.asar.unpacked')])
   )
 
-  const pythonExecutable =
-    roots
-      .flatMap((root) =>
-        process.platform === 'win32'
-          ? [join(root, 'runtime', 'python', 'python.exe'), join(root, 'runtime', 'python', 'Scripts', 'python.exe')]
-          : [join(root, 'runtime', 'python', 'bin', 'python3')]
-      )
-      .find(fileExists) ?? join(cwd, 'runtime', 'python', 'python.exe')
+  let pythonExecutable =
+    process.platform === 'win32'
+      ? join(cwd, 'runtime', 'python', 'python.exe')
+      : join(cwd, 'runtime', 'python', 'bin', 'python3')
+  let pythonRoot = dirname(pythonExecutable)
+  let pythonPathFile: string | null = null
+  let layoutError: string | null = null
 
-  const pythonExecutableDir = dirname(pythonExecutable)
-  const pythonRoot =
-    process.platform === 'win32' &&
-    pythonExecutableDir.toLowerCase().endsWith('\\scripts')
-      ? resolve(pythonExecutableDir, '..')
-      : pythonExecutableDir
+  if (process.platform === 'win32') {
+    for (const root of roots) {
+      const runtimeRoot = join(root, 'runtime', 'python')
+      const bundledPythonExe = join(runtimeRoot, 'python.exe')
+      const portablePythonPathFile = join(runtimeRoot, 'python311._pth')
+      const venvMarker = join(runtimeRoot, 'pyvenv.cfg')
+      const venvPythonExe = join(runtimeRoot, 'Scripts', 'python.exe')
+      const hasBundledPython = fileExists(bundledPythonExe)
+      const hasPortablePathFile = fileExists(portablePythonPathFile)
+      const hasVenvMarker = fileExists(venvMarker)
+      const hasVenvPython = fileExists(venvPythonExe)
+      const hasRuntimeArtifacts =
+        fileExists(runtimeRoot) ||
+        hasBundledPython ||
+        hasPortablePathFile ||
+        hasVenvMarker ||
+        hasVenvPython
+
+      if (!hasRuntimeArtifacts) {
+        continue
+      }
+
+      pythonExecutable = hasVenvPython ? venvPythonExe : bundledPythonExe
+      pythonRoot = runtimeRoot
+      pythonPathFile = hasPortablePathFile ? portablePythonPathFile : null
+
+      if (isPackagedWindowsRuntimeRoot(root)) {
+        const issues: string[] = []
+        if (!hasBundledPython) {
+          issues.push(`missing ${bundledPythonExe}`)
+        }
+        if (!hasPortablePathFile) {
+          issues.push(`missing ${portablePythonPathFile}`)
+        }
+        if (hasVenvMarker) {
+          issues.push(`found ${venvMarker}`)
+        }
+        if (hasVenvPython) {
+          issues.push(`found ${venvPythonExe}`)
+        }
+
+        if (issues.length > 0) {
+          layoutError = createInvalidBundledWindowsRuntimeError(runtimeRoot, issues)
+        }
+      }
+
+      if (hasBundledPython || hasVenvPython || layoutError) {
+        break
+      }
+    }
+  } else {
+    pythonExecutable =
+      roots
+        .map((root) => join(root, 'runtime', 'python', 'bin', 'python3'))
+        .find(fileExists) ?? pythonExecutable
+    pythonRoot = dirname(pythonExecutable)
+  }
+
   const sitePackagesDir =
     process.platform === 'win32'
       ? join(pythonRoot, 'Lib', 'site-packages')
@@ -182,9 +249,9 @@ function resolveRuntimeLayout(options: RuntimeManagerOptions): ResolvedRuntimeLa
       .map((root) => join(root, 'vendor', 'hermes-agent', 'hermes_cli', 'web_dist'))
       .find(fileExists) ?? null
 
-  const pythonPathFile = fileExists(join(pythonRoot, 'python311._pth'))
-    ? join(pythonRoot, 'python311._pth')
-    : null
+  if (!pythonPathFile && fileExists(join(pythonRoot, 'python311._pth'))) {
+    pythonPathFile = join(pythonRoot, 'python311._pth')
+  }
 
   return {
     pythonExecutable,
@@ -193,10 +260,15 @@ function resolveRuntimeLayout(options: RuntimeManagerOptions): ResolvedRuntimeLa
     sitePackagesDir,
     hermesRoot,
     hermesWebDist,
+    layoutError,
   }
 }
 
 async function ensureDirectories(paths: AppPaths, runtimeLayout: ResolvedRuntimeLayout) {
+  if (runtimeLayout.layoutError) {
+    throw new Error(runtimeLayout.layoutError)
+  }
+
   await Promise.all(
     [
       paths.configDir,
@@ -452,8 +524,8 @@ export async function createRuntimeManager(options: RuntimeManagerOptions): Prom
     ...createEmptyService(),
     apiKey: null
   }
-  let overallStatus: RuntimeStatus = 'stopped'
-  let lastError: string | null = null
+  let overallStatus: RuntimeStatus = runtimeLayout.layoutError ? 'failed' : 'stopped'
+  let lastError: string | null = runtimeLayout.layoutError
   let pythonState: PythonRuntimeSnapshot = {
     executable: runtimeLayout.pythonExecutable,
     version: null,

@@ -11,7 +11,8 @@ import type {
   RuntimeLogTail
 } from '@product/shared'
 
-type Page = 'chat' | 'dashboard' | 'bridge'
+type Page = 'workspace' | 'quick-run' | 'commands' | 'diagnostics'
+
 type UiMessage = {
   id: string
   role: 'user' | 'assistant' | 'system'
@@ -26,210 +27,343 @@ type ActivityItem = {
   detail: string
 }
 
-type CompanionCard = {
+type CommandCard = {
   command: HermesCompanionCommand
   title: string
   description: string
+  shell: string
 }
+
+type CommandGroup = {
+  id: string
+  title: string
+  description: string
+  cards: CommandCard[]
+}
+
+type LogChannel = 'dashboard' | 'gateway'
+type ActionState = 'start' | 'restart' | 'stop' | null
+
+const STORAGE_KEYS = {
+  page: 'hermes.desktop.page',
+  locale: 'hermes.desktop.locale'
+} as const
 
 const COPY = {
   'zh-CN': {
-    productTag: '真实 Hermes Agent 桌面控制台',
-    chat: '对话',
-    dashboard: '控制台',
-    bridge: 'TUI / CLI',
-    runtime: '运行时',
-    start: '启动',
-    stop: '停止',
-    restart: '重启',
-    newSession: '新会话',
-    openHome: '打开 Hermes Home',
-    openLogs: '打开日志目录',
-    openNotes: '开源说明',
-    dashboardReady: 'Dashboard 已接入 Hermes 原生 Web UI',
-    dashboardWaiting: 'Dashboard 尚未就绪，先启动 Hermes sidecar。',
-    bridgeReady: '直接打开真实 Hermes CLI / TUI，管理模型、鉴权、工具、Profile 与 Sessions。',
-    bridgeWaiting: '这里不会伪造功能，而是拉起真实 Hermes 终端命令。',
-    apiReady: 'API Server 已接入 Hermes 原生 runs / SSE',
-    apiWaiting: 'API Server 尚未就绪，无法发起真实 Hermes 对话。',
-    composerPlaceholder: '向真实 Hermes Agent 发送指令，例如：扫描当前项目、修改配置、分析日志……',
-    send: '发送到 Hermes',
-    sending: '运行中…',
-    runtimeError: '运行时错误',
-    session: '会话',
-    sessionId: '真实 Hermes Session',
-    activity: '实时事件',
-    logs: '最近日志',
-    dashboardEmbed: '内嵌 Hermes Dashboard',
-    logDashboard: 'Dashboard 日志',
-    logGateway: 'Gateway 日志',
-    emptyChat: '这里显示真实 Hermes Agent 的响应与工具事件。',
-    ready: '就绪',
-    starting: '启动中',
-    stopped: '已停止',
-    failed: '失败',
-    degraded: '降级',
-    python: 'Python 运行时',
-    dependencies: '依赖状态',
-    missingDeps: '缺少依赖，需要先补齐 Hermes Python 依赖。',
-    toolStarted: '工具启动',
-    toolCompleted: '工具完成',
-    reasoning: '推理片段',
-    completed: '运行完成',
-    runFailed: '运行失败',
+    loading: '正在连接 Hermes Agent Desktop…',
+    productTag: '面向真实 Hermes Agent 的桌面控制台。主入口是原生 Dashboard，聊天、命令和诊断都连接同一套运行时。',
     localeLabel: '语言',
-    copyHint: '中文优先，英文可切换',
-    launch: '打开',
-    launching: '打开中…',
-    bridgeHint: '这些入口与桌面版共用同一个 Hermes Home、配置、会话与日志。',
-    bridgeSharedState: '共享状态',
-    bridgeSharedStateDesc: '同一份 HERMES_HOME，同一份真实 Hermes 数据。',
-    noLogs: '暂无日志',
-    noRuntime: '正在读取桌面环境…',
-    noDashboard: 'Dashboard 未启动',
-    noApi: 'API 未启动'
+    localeHint: '中文优先，可切换英文',
+    pages: {
+      workspace: '工作台',
+      quickRun: '快速执行',
+      commands: '命令中心',
+      diagnostics: '运行状态'
+    },
+    pageCopy: {
+      workspaceTitle: '原生 Hermes Dashboard',
+      workspaceBody: '这里直接承载 Hermes 自带 Web UI，不再用桌面壳伪造聊天工作区。',
+      workspaceWaiting: 'Dashboard 还没有就绪。先启动运行时，桌面端会接入真实 Hermes Dashboard。',
+      quickRunTitle: '真实 API 快速执行',
+      quickRunBody: '这个页面通过 Hermes Gateway 的 `/v1/runs` 与真实运行时通信，适合快速下达任务。',
+      quickRunWaiting: 'Gateway 还没有就绪，暂时无法发送真实 Hermes 任务。',
+      commandsTitle: '真实 Hermes 命令入口',
+      commandsBody: '这些按钮会直接打开 Hermes 原生命令，而不是桌面端自造设置页。',
+      diagnosticsTitle: '运行状态与恢复',
+      diagnosticsBody: '把运行时、依赖、路径和日志集中在这里，避免主界面被诊断信息淹没。'
+    },
+    runtime: {
+      section: '运行时',
+      start: '启动',
+      restart: '重启',
+      stop: '停止',
+      runtimeReady: '运行中',
+      runtimeStarting: '启动中',
+      runtimeStopped: '已停止',
+      runtimeFailed: '失败',
+      runtimeDegraded: '降级',
+      dashboard: 'Dashboard',
+      api: 'Gateway API',
+      python: 'Python',
+      dependencies: '依赖',
+      ready: '就绪',
+      offline: '离线',
+      missingDeps: '依赖不完整',
+      logs: '日志',
+      tools: '工具入口',
+      paths: '路径',
+      sharedState: '共享状态',
+      sharedStateBody: '桌面壳、Dashboard、Gateway、CLI/TUI 使用同一个 HERMES_HOME。'
+    },
+    quickRun: {
+      session: '会话',
+      sessionId: 'Hermes Session ID',
+      newSession: '新会话',
+      composerPlaceholder: '向真实 Hermes Agent 发送任务，例如：扫描当前项目、分析日志、修改配置、整理需求。',
+      send: '发送到 Hermes',
+      sending: '执行中…',
+      activity: '实时事件',
+      messages: '消息流',
+      emptyMessages: '这里展示 Hermes Gateway 返回的真实消息流。',
+      emptyActivity: '工具、推理和运行状态会显示在这里。',
+      runReady: 'Gateway 已连接',
+      runWaiting: 'Gateway 未就绪',
+      user: '你',
+      assistant: 'Hermes',
+      system: '系统',
+      ctrlEnter: 'Ctrl/Cmd + Enter 发送'
+    },
+    commands: {
+      launch: '打开命令',
+      launching: '打开中…'
+    },
+    diagnostics: {
+      serviceState: '服务状态',
+      lastError: '最近错误',
+      noLogs: '暂无日志',
+      dashboardLog: 'Dashboard 日志',
+      gatewayLog: 'Gateway 日志',
+      openHome: '打开 Hermes Home',
+      openLogs: '打开日志目录',
+      openNotes: '开源说明',
+      dependencyReady: '依赖完整',
+      dependencyMissing: '依赖缺失'
+    },
+    notices: {
+      runtimeUnavailable: '运行时尚未就绪。',
+      apiUnavailable: 'Gateway 尚未就绪，无法执行真实 Hermes 任务。'
+    },
+    eventLabels: {
+      toolStarted: '工具启动',
+      toolCompleted: '工具完成',
+      reasoning: '推理片段',
+      completed: '执行完成',
+      failed: '执行失败'
+    },
+    misc: {
+      unknown: '未知',
+      none: '无',
+      open: '打开',
+      modelAndAuth: '模型与鉴权',
+      sessionsAndTerminal: '会话与终端',
+      toolsAndGateway: '工具与网关'
+    }
   },
   'en-US': {
-    productTag: 'Desktop control console for the real Hermes Agent',
-    chat: 'Chat',
-    dashboard: 'Dashboard',
-    bridge: 'TUI / CLI',
-    runtime: 'Runtime',
-    start: 'Start',
-    stop: 'Stop',
-    restart: 'Restart',
-    newSession: 'New session',
-    openHome: 'Open Hermes Home',
-    openLogs: 'Open logs',
-    openNotes: 'Open source notes',
-    dashboardReady: 'Dashboard is powered by the native Hermes web UI.',
-    dashboardWaiting: 'Dashboard is not ready yet. Start the Hermes sidecar first.',
-    bridgeReady: 'Launch the real Hermes CLI / TUI to manage models, auth, tools, profiles, and sessions.',
-    bridgeWaiting: 'This page opens real Hermes terminal commands instead of fake desktop-only controls.',
-    apiReady: 'API Server is powered by the native Hermes runs / SSE endpoints.',
-    apiWaiting: 'API Server is not ready yet, so real Hermes chat is unavailable.',
-    composerPlaceholder:
-      'Send a task to the real Hermes Agent, for example: inspect this repo, change config, analyze logs...',
-    send: 'Send to Hermes',
-    sending: 'Running…',
-    runtimeError: 'Runtime error',
-    session: 'Session',
-    sessionId: 'Real Hermes Session',
-    activity: 'Live events',
-    logs: 'Recent logs',
-    dashboardEmbed: 'Embedded Hermes Dashboard',
-    logDashboard: 'Dashboard log',
-    logGateway: 'Gateway log',
-    emptyChat: 'Real Hermes Agent responses and tool activity will appear here.',
-    ready: 'Ready',
-    starting: 'Starting',
-    stopped: 'Stopped',
-    failed: 'Failed',
-    degraded: 'Degraded',
-    python: 'Python runtime',
-    dependencies: 'Dependency status',
-    missingDeps: 'Dependencies are missing. Install the Hermes Python stack first.',
-    toolStarted: 'Tool started',
-    toolCompleted: 'Tool completed',
-    reasoning: 'Reasoning',
-    completed: 'Run completed',
-    runFailed: 'Run failed',
+    loading: 'Connecting to Hermes Agent Desktop…',
+    productTag:
+      'Desktop control surface for the real Hermes Agent. The native dashboard stays primary, while chat, commands, and diagnostics attach to the same runtime.',
     localeLabel: 'Language',
-    copyHint: 'Chinese-first, English optional',
-    launch: 'Open',
-    launching: 'Opening…',
-    bridgeHint: 'These entrypoints share the same Hermes Home, config, sessions, and logs as the desktop app.',
-    bridgeSharedState: 'Shared state',
-    bridgeSharedStateDesc: 'The desktop shell and Hermes commands use one real HERMES_HOME.',
-    noLogs: 'No logs yet',
-    noRuntime: 'Loading desktop environment…',
-    noDashboard: 'Dashboard is offline',
-    noApi: 'API is offline'
+    localeHint: 'Chinese-first, English optional',
+    pages: {
+      workspace: 'Workspace',
+      quickRun: 'Quick Run',
+      commands: 'Commands',
+      diagnostics: 'Diagnostics'
+    },
+    pageCopy: {
+      workspaceTitle: 'Native Hermes Dashboard',
+      workspaceBody: 'This embeds the web UI shipped by Hermes instead of faking a desktop-only workspace.',
+      workspaceWaiting:
+        'The dashboard is not ready yet. Start the runtime first and the desktop shell will attach to the real Hermes dashboard.',
+      quickRunTitle: 'Real API Quick Run',
+      quickRunBody:
+        'This view talks to the Hermes Gateway `/v1/runs` endpoint for direct tasks against the real runtime.',
+      quickRunWaiting: 'The gateway is not ready yet, so real Hermes runs are unavailable.',
+      commandsTitle: 'Real Hermes Command Entry Points',
+      commandsBody:
+        'These buttons launch native Hermes commands instead of inventing desktop-only settings screens.',
+      diagnosticsTitle: 'Runtime Status and Recovery',
+      diagnosticsBody:
+        'Keep runtime state, dependencies, paths, and logs here so diagnostics do not take over the main workspace.'
+    },
+    runtime: {
+      section: 'Runtime',
+      start: 'Start',
+      restart: 'Restart',
+      stop: 'Stop',
+      runtimeReady: 'Ready',
+      runtimeStarting: 'Starting',
+      runtimeStopped: 'Stopped',
+      runtimeFailed: 'Failed',
+      runtimeDegraded: 'Degraded',
+      dashboard: 'Dashboard',
+      api: 'Gateway API',
+      python: 'Python',
+      dependencies: 'Dependencies',
+      ready: 'Ready',
+      offline: 'Offline',
+      missingDeps: 'Missing deps',
+      logs: 'Logs',
+      tools: 'Tool entrypoints',
+      paths: 'Paths',
+      sharedState: 'Shared state',
+      sharedStateBody: 'The desktop shell, dashboard, gateway, and CLI/TUI all share one HERMES_HOME.'
+    },
+    quickRun: {
+      session: 'Session',
+      sessionId: 'Hermes Session ID',
+      newSession: 'New Session',
+      composerPlaceholder:
+        'Send a real Hermes task, for example: inspect this repo, analyze logs, change config, summarize requirements.',
+      send: 'Send to Hermes',
+      sending: 'Running…',
+      activity: 'Live events',
+      messages: 'Message stream',
+      emptyMessages: 'Real Hermes Gateway messages will appear here.',
+      emptyActivity: 'Tool, reasoning, and run events will appear here.',
+      runReady: 'Gateway ready',
+      runWaiting: 'Gateway offline',
+      user: 'You',
+      assistant: 'Hermes',
+      system: 'System',
+      ctrlEnter: 'Ctrl/Cmd + Enter to send'
+    },
+    commands: {
+      launch: 'Open command',
+      launching: 'Opening…'
+    },
+    diagnostics: {
+      serviceState: 'Service state',
+      lastError: 'Latest error',
+      noLogs: 'No logs yet',
+      dashboardLog: 'Dashboard log',
+      gatewayLog: 'Gateway log',
+      openHome: 'Open Hermes Home',
+      openLogs: 'Open logs folder',
+      openNotes: 'Open source notes',
+      dependencyReady: 'Dependencies ready',
+      dependencyMissing: 'Dependencies missing'
+    },
+    notices: {
+      runtimeUnavailable: 'The runtime is not ready yet.',
+      apiUnavailable: 'The gateway is not ready, so real Hermes tasks cannot run.'
+    },
+    eventLabels: {
+      toolStarted: 'Tool started',
+      toolCompleted: 'Tool completed',
+      reasoning: 'Reasoning',
+      completed: 'Run completed',
+      failed: 'Run failed'
+    },
+    misc: {
+      unknown: 'Unknown',
+      none: 'None',
+      open: 'Open',
+      modelAndAuth: 'Model and auth',
+      sessionsAndTerminal: 'Sessions and terminal',
+      toolsAndGateway: 'Tools and gateway'
+    }
   }
 } as const
 
-function getCompanionCards(locale: Locale): CompanionCard[] {
-  if (locale === 'zh-CN') {
-    return [
-      {
-        command: 'chat-tui',
-        title: '真实 Hermes TUI',
-        description: '打开原生终端聊天界面，直接使用 Hermes 的真实 TUI。'
-      },
-      {
-        command: 'sessions',
-        title: 'Sessions',
-        description: '列出真实 Hermes 会话，和 Dashboard / TUI 共享同一份会话状态。'
-      },
-      {
-        command: 'model',
-        title: '模型与 Provider',
-        description: '启动真实 `hermes model` 流程，切换模型、Provider 与凭据。'
-      },
-      {
-        command: 'tools',
-        title: 'Tools / Toolsets',
-        description: '进入真实工具配置入口，管理 toolsets 与能力边界。'
-      },
-      {
-        command: 'auth',
-        title: '鉴权池',
-        description: '打开真实 `hermes auth`，维护 API key、OAuth 与凭据状态。'
-      },
-      {
-        command: 'profile',
-        title: 'Profiles',
-        description: '管理真实 Hermes profiles，支持多身份、多配置切换。'
-      },
-      {
-        command: 'gateway-setup',
-        title: 'Gateway Setup',
-        description: '打开真实 `hermes gateway setup`，配置消息平台与接入流程。'
-      }
-    ]
-  }
-
-  return [
-    {
-      command: 'chat-tui',
-      title: 'Native Hermes TUI',
-      description: 'Open the real terminal chat UI shipped by Hermes Agent.'
-    },
-    {
-      command: 'sessions',
-      title: 'Sessions',
-      description: 'List real Hermes sessions that are shared with the dashboard and TUI.'
-    },
-    {
-      command: 'model',
-      title: 'Model & Provider',
-      description: 'Launch the real `hermes model` flow for model and provider switching.'
-    },
-    {
-      command: 'tools',
-      title: 'Tools / Toolsets',
-      description: 'Open the real tool configuration surface backed by Hermes.'
-    },
-    {
-      command: 'auth',
-      title: 'Auth Pool',
-      description: 'Launch `hermes auth` to manage API keys, OAuth state, and credentials.'
-    },
-    {
-      command: 'profile',
-      title: 'Profiles',
-      description: 'Manage real Hermes profiles for multi-workflow and multi-identity setups.'
-    },
-    {
-      command: 'gateway-setup',
-      title: 'Gateway Setup',
-      description: 'Open `hermes gateway setup` to configure real messaging platforms.'
-    }
-  ]
+function trimLogLines(lines: string[]) {
+  return lines.slice(-160)
 }
 
-function trimLogLines(lines: string[]) {
-  return lines.slice(-80)
+function readStoredPage(): Page {
+  const stored = window.localStorage.getItem(STORAGE_KEYS.page)
+  if (
+    stored === 'workspace' ||
+    stored === 'quick-run' ||
+    stored === 'commands' ||
+    stored === 'diagnostics'
+  ) {
+    return stored
+  }
+  return 'workspace'
+}
+
+function readStoredLocale(): Locale | null {
+  const stored = window.localStorage.getItem(STORAGE_KEYS.locale)
+  if (stored === 'zh-CN' || stored === 'en-US') {
+    return stored
+  }
+  return null
+}
+
+function runtimeStatusLabel(locale: Locale, status: HermesRuntimeSnapshot['overallStatus']) {
+  const copy = COPY[locale].runtime
+  if (status === 'ready') {
+    return copy.runtimeReady
+  }
+  if (status === 'starting') {
+    return copy.runtimeStarting
+  }
+  if (status === 'failed') {
+    return copy.runtimeFailed
+  }
+  if (status === 'degraded') {
+    return copy.runtimeDegraded
+  }
+  return copy.runtimeStopped
+}
+
+function serviceStatusLabel(locale: Locale, status: 'ready' | 'starting' | 'failed' | 'stopped') {
+  const copy = COPY[locale].runtime
+  if (status === 'ready') {
+    return copy.ready
+  }
+  if (status === 'starting') {
+    return copy.runtimeStarting
+  }
+  if (status === 'failed') {
+    return copy.runtimeFailed
+  }
+  return copy.offline
+}
+
+function statusTone(status: HermesRuntimeSnapshot['overallStatus'] | 'ready' | 'starting' | 'failed' | 'stopped') {
+  if (status === 'ready') {
+    return 'ready'
+  }
+  if (status === 'starting') {
+    return 'starting'
+  }
+  if (status === 'failed') {
+    return 'failed'
+  }
+  if (status === 'degraded') {
+    return 'degraded'
+  }
+  return 'stopped'
+}
+
+function dependencySummary(runtime: HermesRuntimeSnapshot) {
+  const dependencies = Object.values(runtime.python.dependencies)
+  const readyCount = dependencies.filter(Boolean).length
+  return {
+    readyCount,
+    totalCount: dependencies.length,
+    allReady: dependencies.every(Boolean)
+  }
+}
+
+function formatValue(value: string | null | number | null, fallback: string) {
+  if (value === null || value === undefined || value === '') {
+    return fallback
+  }
+  return String(value)
+}
+
+function formatTimestamp(locale: Locale, value: string | null) {
+  if (!value) {
+    return COPY[locale].misc.none
+  }
+
+  try {
+    return new Intl.DateTimeFormat(locale, {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    }).format(new Date(value))
+  } catch {
+    return value
+  }
 }
 
 async function readSseStream(
@@ -269,44 +403,160 @@ async function readSseStream(
       onEvent(JSON.parse(dataLines.join('\n')) as HermesRunEvent)
     }
   }
+
+  const trailingDataLines = buffer
+    .replaceAll('\r', '')
+    .split('\n')
+    .filter((line) => line.startsWith('data:'))
+    .map((line) => line.replace(/^data:\s?/, ''))
+
+  if (trailingDataLines.length > 0) {
+    onEvent(JSON.parse(trailingDataLines.join('\n')) as HermesRunEvent)
+  }
 }
 
-function runtimeStatusLabel(locale: Locale, status: HermesRuntimeSnapshot['overallStatus']) {
-  const copy = COPY[locale]
-  if (status === 'ready') {
-    return copy.ready
+function getCommandGroups(locale: Locale): CommandGroup[] {
+  if (locale === 'zh-CN') {
+    return [
+      {
+        id: 'model-auth',
+        title: '模型、鉴权与 Profile',
+        description: '这些入口直接打开原生 Hermes 命令，用来改模型、Provider、API Key 和 Profile。',
+        cards: [
+          {
+            command: 'model',
+            title: '模型与 Provider',
+            description: '打开真实 `hermes model` 流程，切换模型与 Provider。',
+            shell: 'hermes model'
+          },
+          {
+            command: 'auth',
+            title: '鉴权池',
+            description: '打开真实 `hermes auth` 管理 API Key、OAuth 和凭据。',
+            shell: 'hermes auth'
+          },
+          {
+            command: 'profile',
+            title: 'Profiles',
+            description: '打开真实 `hermes profile`，切换不同身份与配置。',
+            shell: 'hermes profile'
+          }
+        ]
+      },
+      {
+        id: 'sessions-terminal',
+        title: '会话与终端',
+        description: '桌面端不替代 TUI，这些入口直接拉起 Hermes 原生终端能力。',
+        cards: [
+          {
+            command: 'chat-tui',
+            title: '原生 TUI',
+            description: '打开真实 `hermes chat --tui` 聊天界面。',
+            shell: 'hermes chat --tui'
+          },
+          {
+            command: 'sessions',
+            title: 'Sessions',
+            description: '打开真实 `hermes sessions list` 查看会话。',
+            shell: 'hermes sessions list'
+          }
+        ]
+      },
+      {
+        id: 'tools-gateway',
+        title: '工具与网关',
+        description: '继续使用 Hermes 本身的工具和 Gateway 配置，不在桌面端复制一套假设置。',
+        cards: [
+          {
+            command: 'tools',
+            title: 'Tools / Toolsets',
+            description: '打开真实 `hermes tools` 配置工具与 toolsets。',
+            shell: 'hermes tools'
+          },
+          {
+            command: 'gateway-setup',
+            title: 'Gateway Setup',
+            description: '打开真实 `hermes gateway setup` 配置网关接入。',
+            shell: 'hermes gateway setup'
+          }
+        ]
+      }
+    ]
   }
-  if (status === 'starting') {
-    return copy.starting
-  }
-  if (status === 'failed') {
-    return copy.failed
-  }
-  if (status === 'degraded') {
-    return copy.degraded
-  }
-  return copy.stopped
-}
 
-function serviceTone(status: HermesRuntimeSnapshot['overallStatus']) {
-  if (status === 'ready') {
-    return 'ready'
-  }
-  if (status === 'starting') {
-    return 'starting'
-  }
-  if (status === 'failed') {
-    return 'failed'
-  }
-  return 'stopped'
+  return [
+    {
+      id: 'model-auth',
+      title: 'Model, Auth, and Profiles',
+      description: 'Open native Hermes commands for model changes, provider switching, credentials, and profiles.',
+      cards: [
+        {
+          command: 'model',
+          title: 'Model and Provider',
+          description: 'Launch the real `hermes model` flow.',
+          shell: 'hermes model'
+        },
+        {
+          command: 'auth',
+          title: 'Auth Pool',
+          description: 'Launch the real `hermes auth` command.',
+          shell: 'hermes auth'
+        },
+        {
+          command: 'profile',
+          title: 'Profiles',
+          description: 'Launch the real `hermes profile` flow.',
+          shell: 'hermes profile'
+        }
+      ]
+    },
+    {
+      id: 'sessions-terminal',
+      title: 'Sessions and Terminal',
+      description: 'The desktop shell does not replace the TUI. These actions open native Hermes terminal flows.',
+      cards: [
+        {
+          command: 'chat-tui',
+          title: 'Native TUI',
+          description: 'Open the real `hermes chat --tui` experience.',
+          shell: 'hermes chat --tui'
+        },
+        {
+          command: 'sessions',
+          title: 'Sessions',
+          description: 'Launch the real `hermes sessions list` command.',
+          shell: 'hermes sessions list'
+        }
+      ]
+    },
+    {
+      id: 'tools-gateway',
+      title: 'Tools and Gateway',
+      description: 'Keep tool and gateway configuration grounded in Hermes itself instead of duplicating fake desktop settings.',
+      cards: [
+        {
+          command: 'tools',
+          title: 'Tools / Toolsets',
+          description: 'Open the real `hermes tools` flow.',
+          shell: 'hermes tools'
+        },
+        {
+          command: 'gateway-setup',
+          title: 'Gateway Setup',
+          description: 'Open the real `hermes gateway setup` flow.',
+          shell: 'hermes gateway setup'
+        }
+      ]
+    }
+  ]
 }
 
 export function App() {
   const [environment, setEnvironment] = useState<DesktopEnvironment | null>(null)
   const [runtime, setRuntime] = useState<HermesRuntimeSnapshot | null>(null)
   const [logs, setLogs] = useState<RuntimeLogTail>({ dashboard: [], gateway: [] })
-  const [page, setPage] = useState<Page>('chat')
-  const [locale, setLocale] = useState<Locale>('zh-CN')
+  const [page, setPage] = useState<Page>(() => readStoredPage())
+  const [locale, setLocale] = useState<Locale>(() => readStoredLocale() ?? 'zh-CN')
   const [composer, setComposer] = useState('')
   const [messages, setMessages] = useState<UiMessage[]>([])
   const [activity, setActivity] = useState<ActivityItem[]>([])
@@ -314,28 +564,34 @@ export function App() {
   const [busy, setBusy] = useState(false)
   const [notice, setNotice] = useState<string | null>(null)
   const [launchingCommand, setLaunchingCommand] = useState<HermesCompanionCommand | null>(null)
+  const [runtimeAction, setRuntimeAction] = useState<ActionState>(null)
+  const [activeLog, setActiveLog] = useState<LogChannel>('dashboard')
 
   const copy = COPY[locale]
-  const companionCards = useMemo(() => getCompanionCards(locale), [locale])
+  const commandGroups = useMemo(() => getCommandGroups(locale), [locale])
+  const dependencyState = useMemo(() => (runtime ? dependencySummary(runtime) : null), [runtime])
 
   useEffect(() => {
     let disposed = false
 
     async function bootstrap() {
       const desktopEnvironment = await window.desktop.getEnvironment()
-      const logTail = await window.desktop.getLogTail(80)
+      const logTail = await window.desktop.getLogTail(160)
 
       if (disposed) {
         return
       }
 
       setEnvironment(desktopEnvironment)
-      setLocale(desktopEnvironment.locale)
       setRuntime(desktopEnvironment.runtime)
       setLogs({
         dashboard: trimLogLines(logTail.dashboard),
         gateway: trimLogLines(logTail.gateway)
       })
+
+      if (!readStoredLocale()) {
+        setLocale(desktopEnvironment.locale)
+      }
     }
 
     void bootstrap().catch((error) => {
@@ -350,12 +606,20 @@ export function App() {
   }, [])
 
   useEffect(() => {
+    window.localStorage.setItem(STORAGE_KEYS.page, page)
+  }, [page])
+
+  useEffect(() => {
+    window.localStorage.setItem(STORAGE_KEYS.locale, locale)
+  }, [locale])
+
+  useEffect(() => {
     if (!environment) {
       return
     }
 
     const timer = window.setInterval(() => {
-      void Promise.all([window.desktop.getRuntimeSnapshot(), window.desktop.getLogTail(80)])
+      void Promise.all([window.desktop.getRuntimeSnapshot(), window.desktop.getLogTail(160)])
         .then(([snapshot, nextLogs]) => {
           setRuntime(snapshot)
           setLogs({
@@ -380,13 +644,16 @@ export function App() {
     [messages]
   )
 
-  async function syncRuntime(result: Promise<{ snapshot: HermesRuntimeSnapshot }>) {
+  async function syncRuntime(action: ActionState, result: Promise<{ snapshot: HermesRuntimeSnapshot }>) {
+    setRuntimeAction(action)
     try {
       const response = await result
       setRuntime(response.snapshot)
       setNotice(null)
     } catch (error) {
       setNotice(error instanceof Error ? error.message : String(error))
+    } finally {
+      setRuntimeAction(null)
     }
   }
 
@@ -404,7 +671,7 @@ export function App() {
 
   async function handleSend() {
     if (runtime?.api.status !== 'ready' || !runtime.api.url || !runtime.api.apiKey || busy) {
-      setNotice(copy.apiWaiting)
+      setNotice(copy.notices.apiUnavailable)
       return
     }
 
@@ -426,7 +693,6 @@ export function App() {
 
     setBusy(true)
     setComposer('')
-    setActivity([])
     setNotice(null)
     setMessages((current) => [
       ...current,
@@ -480,8 +746,8 @@ export function App() {
             {
               id: `${event.run_id}-${event.timestamp}-${current.length}`,
               kind: 'tool',
-              title: copy.toolStarted,
-              detail: `${event.tool ?? 'unknown'} ${event.preview ? `· ${event.preview}` : ''}`.trim()
+              title: copy.eventLabels.toolStarted,
+              detail: `${event.tool ?? copy.misc.unknown}${event.preview ? ` · ${event.preview}` : ''}`
             },
             ...current
           ])
@@ -492,8 +758,8 @@ export function App() {
             {
               id: `${event.run_id}-${event.timestamp}-${current.length}`,
               kind: 'tool',
-              title: copy.toolCompleted,
-              detail: `${event.tool ?? 'unknown'} · ${event.duration ?? 0}s`
+              title: copy.eventLabels.toolCompleted,
+              detail: `${event.tool ?? copy.misc.unknown} · ${event.duration ?? 0}s`
             },
             ...current
           ])
@@ -504,7 +770,7 @@ export function App() {
             {
               id: `${event.run_id}-${event.timestamp}-${current.length}`,
               kind: 'reasoning',
-              title: copy.reasoning,
+              title: copy.eventLabels.reasoning,
               detail: event.text ?? ''
             },
             ...current
@@ -527,10 +793,10 @@ export function App() {
             {
               id: `${event.run_id}-${event.timestamp}-${current.length}`,
               kind: 'status',
-              title: copy.completed,
+              title: copy.eventLabels.completed,
               detail: event.usage
                 ? `in ${event.usage.input_tokens} / out ${event.usage.output_tokens}`
-                : copy.completed
+                : copy.eventLabels.completed
             },
             ...current
           ])
@@ -542,7 +808,7 @@ export function App() {
               message.id === assistantId
                 ? {
                     ...message,
-                    content: event.error && typeof event.error === 'string' ? event.error : message.content,
+                    content: typeof event.error === 'string' ? event.error : message.content,
                     status: 'failed'
                   }
                 : message
@@ -552,12 +818,12 @@ export function App() {
             {
               id: `${event.run_id}-${event.timestamp}-${current.length}`,
               kind: 'status',
-              title: copy.runFailed,
-              detail: typeof event.error === 'string' ? event.error : copy.runFailed
+              title: copy.eventLabels.failed,
+              detail: typeof event.error === 'string' ? event.error : copy.eventLabels.failed
             },
             ...current
           ])
-          setNotice(typeof event.error === 'string' ? event.error : copy.runFailed)
+          setNotice(typeof event.error === 'string' ? event.error : copy.eventLabels.failed)
         }
       })
     } catch (error) {
@@ -586,20 +852,30 @@ export function App() {
     setNotice(null)
   }
 
-  if (!environment || !runtime) {
-    return <div className="loading-screen">{COPY['zh-CN'].noRuntime}</div>
+  if (!environment || !runtime || !dependencyState) {
+    return <div className="loading-screen">{copy.loading}</div>
   }
 
+  const currentLogs = activeLog === 'dashboard' ? logs.dashboard : logs.gateway
+  const dashboardReady = runtime.dashboard.status === 'ready' && runtime.dashboard.url
+  const apiReady = runtime.api.status === 'ready' && runtime.api.url && runtime.api.apiKey
+
   return (
-    <div className="console-shell">
-      <aside className="side-column">
-        <div className="brand-card">
-          <p className="eyebrow">Hermes Agent</p>
-          <h1>{environment.productName}</h1>
-          <p className="brand-copy">{copy.productTag}</p>
-          <div className="language-row">
+    <div className="app-shell">
+      <header className="topbar">
+        <div className="brand-cluster">
+          <div className="brand-mark">H</div>
+          <div>
+            <p className="eyebrow">Hermes Agent</p>
+            <h1>{environment.productName}</h1>
+            <p className="brand-copy">{copy.productTag}</p>
+          </div>
+        </div>
+
+        <div className="topbar-actions">
+          <div className="locale-switch">
             <span>{copy.localeLabel}</span>
-            <div className="language-switch">
+            <div className="toggle-group">
               <button
                 className={locale === 'zh-CN' ? 'active' : ''}
                 onClick={() => setLocale('zh-CN')}
@@ -613,225 +889,495 @@ export function App() {
                 EN
               </button>
             </div>
+            <small>{copy.localeHint}</small>
           </div>
-          <p className="micro-copy">{copy.copyHint}</p>
-        </div>
 
-        <div className="panel-card">
-          <div className="panel-head">
-            <h2>{copy.runtime}</h2>
-            <span className={`status-pill ${serviceTone(runtime.overallStatus)}`}>
+          <div className="runtime-actions">
+            <span className={`status-pill ${statusTone(runtime.overallStatus)}`}>
               {runtimeStatusLabel(locale, runtime.overallStatus)}
             </span>
-          </div>
-          <div className="metrics">
-            <div>
-              <span>{copy.python}</span>
-              <strong>{runtime.python.version ?? 'Unknown'}</strong>
-            </div>
-            <div>
-              <span>Dashboard</span>
-              <strong>{runtime.dashboard.port ?? copy.noDashboard}</strong>
-            </div>
-            <div>
-              <span>API</span>
-              <strong>{runtime.api.port ?? copy.noApi}</strong>
-            </div>
-          </div>
-          {runtime.lastError && (
-            <div className="warning-box">
-              <strong>{copy.runtimeError}</strong>
-              <p>{runtime.lastError}</p>
-            </div>
-          )}
-          {runtime.python.bootstrapState === 'missing-deps' && (
-            <div className="warning-box muted-box">
-              <strong>{copy.dependencies}</strong>
-              <p>{copy.missingDeps}</p>
-            </div>
-          )}
-          <div className="button-stack">
-            <button className="primary" onClick={() => void syncRuntime(window.desktop.startRuntime())}>
-              {copy.start}
-            </button>
-            <button className="secondary" onClick={() => void syncRuntime(window.desktop.restartRuntime())}>
-              {copy.restart}
-            </button>
-            <button className="ghost" onClick={() => void syncRuntime(window.desktop.stopRuntime())}>
-              {copy.stop}
-            </button>
-          </div>
-          <div className="button-stack compact">
-            <button className="secondary" onClick={() => void window.desktop.openHermesHome()}>
-              {copy.openHome}
-            </button>
-            <button className="secondary" onClick={() => void window.desktop.openLogsDirectory()}>
-              {copy.openLogs}
-            </button>
-            <button className="secondary" onClick={() => void window.desktop.openOpenSourceNotes()}>
-              {copy.openNotes}
-            </button>
-          </div>
-        </div>
-
-        <div className="panel-card">
-          <div className="panel-head">
-            <h2>{copy.logs}</h2>
-          </div>
-          <div className="log-block">
-            <h3>{copy.logDashboard}</h3>
-            <pre>{logs.dashboard.join('\n') || copy.noLogs}</pre>
-          </div>
-          <div className="log-block">
-            <h3>{copy.logGateway}</h3>
-            <pre>{logs.gateway.join('\n') || copy.noLogs}</pre>
-          </div>
-        </div>
-      </aside>
-
-      <section className="main-column">
-        <header className="hero-card">
-          <div>
-            <p className="eyebrow">{copy.session}</p>
-            <h2>{page === 'chat' ? copy.chat : page === 'dashboard' ? copy.dashboard : copy.bridge}</h2>
-            <p className="hero-copy">
-              {page === 'chat'
-                ? runtime.api.status === 'ready'
-                  ? copy.apiReady
-                  : copy.apiWaiting
-                : page === 'dashboard'
-                  ? runtime.dashboard.status === 'ready'
-                    ? copy.dashboardReady
-                    : copy.dashboardWaiting
-                  : runtime.overallStatus === 'failed'
-                    ? runtime.lastError ?? copy.bridgeWaiting
-                    : copy.bridgeReady}
-            </p>
-          </div>
-          <div className="tab-row">
-            <button className={page === 'chat' ? 'active' : ''} onClick={() => setPage('chat')}>
-              {copy.chat}
+            <button
+              className="primary-button"
+              disabled={runtimeAction !== null}
+              onClick={() => void syncRuntime('start', window.desktop.startRuntime())}
+            >
+              {runtimeAction === 'start' ? copy.runtime.runtimeStarting : copy.runtime.start}
             </button>
             <button
-              className={page === 'dashboard' ? 'active' : ''}
-              onClick={() => setPage('dashboard')}
+              className="secondary-button"
+              disabled={runtimeAction !== null}
+              onClick={() => void syncRuntime('restart', window.desktop.restartRuntime())}
             >
-              {copy.dashboard}
+              {runtimeAction === 'restart' ? copy.runtime.runtimeStarting : copy.runtime.restart}
             </button>
-            <button className={page === 'bridge' ? 'active' : ''} onClick={() => setPage('bridge')}>
-              {copy.bridge}
+            <button
+              className="ghost-button"
+              disabled={runtimeAction !== null}
+              onClick={() => void syncRuntime('stop', window.desktop.stopRuntime())}
+            >
+              {copy.runtime.stop}
             </button>
           </div>
-        </header>
+        </div>
+      </header>
 
-        {notice && <div className="notice-banner">{notice}</div>}
+      <div className="layout-shell">
+        <aside className="nav-rail">
+          <nav className="nav-panel">
+            <button
+              className={page === 'workspace' ? 'nav-button active' : 'nav-button'}
+              onClick={() => setPage('workspace')}
+            >
+              {copy.pages.workspace}
+            </button>
+            <button
+              className={page === 'quick-run' ? 'nav-button active' : 'nav-button'}
+              onClick={() => setPage('quick-run')}
+            >
+              {copy.pages.quickRun}
+            </button>
+            <button
+              className={page === 'commands' ? 'nav-button active' : 'nav-button'}
+              onClick={() => setPage('commands')}
+            >
+              {copy.pages.commands}
+            </button>
+            <button
+              className={page === 'diagnostics' ? 'nav-button active' : 'nav-button'}
+              onClick={() => setPage('diagnostics')}
+            >
+              {copy.pages.diagnostics}
+            </button>
+          </nav>
 
-        {page === 'chat' ? (
-          <div className="chat-layout">
-            <section className="conversation-card">
-              <div className="conversation-head">
-                <div>
-                  <p className="eyebrow">{copy.sessionId}</p>
-                  <strong>{sessionId}</strong>
-                </div>
-                <button className="secondary" onClick={handleNewSession}>
-                  {copy.newSession}
-                </button>
+          <section className="rail-card">
+            <div className="section-head">
+              <h2>{copy.runtime.section}</h2>
+              <span className={`status-pill ${statusTone(runtime.overallStatus)}`}>
+                {runtimeStatusLabel(locale, runtime.overallStatus)}
+              </span>
+            </div>
+            <div className="service-list">
+              <div className="service-row">
+                <span>{copy.runtime.dashboard}</span>
+                <strong className={statusTone(runtime.dashboard.status)}>
+                  {serviceStatusLabel(locale, runtime.dashboard.status)}
+                </strong>
               </div>
-              <div className="message-stream">
-                {messages.length === 0 && <div className="empty-state">{copy.emptyChat}</div>}
-                {messages.map((message) => (
-                  <article key={message.id} className={`bubble ${message.role}`}>
-                    <header>
-                      <span>{message.role}</span>
-                      <small>{message.status}</small>
-                    </header>
-                    <p>{message.content || (message.status === 'streaming' ? '...' : '')}</p>
-                  </article>
-                ))}
+              <div className="service-row">
+                <span>{copy.runtime.api}</span>
+                <strong className={statusTone(runtime.api.status)}>
+                  {serviceStatusLabel(locale, runtime.api.status)}
+                </strong>
               </div>
-              <div className="composer-card">
-                <textarea
-                  value={composer}
-                  placeholder={copy.composerPlaceholder}
-                  onChange={(event) => setComposer(event.target.value)}
-                />
-                <div className="composer-actions">
-                  <button className="primary" disabled={busy} onClick={() => void handleSend()}>
-                    {busy ? copy.sending : copy.send}
+              <div className="service-row">
+                <span>{copy.runtime.python}</span>
+                <strong>{formatValue(runtime.python.version, copy.misc.unknown)}</strong>
+              </div>
+              <div className="service-row">
+                <span>{copy.runtime.dependencies}</span>
+                <strong className={dependencyState.allReady ? 'ready' : 'failed'}>
+                  {dependencyState.readyCount}/{dependencyState.totalCount}
+                </strong>
+              </div>
+            </div>
+          </section>
+
+          <section className="rail-card">
+            <div className="section-head">
+              <h2>{copy.runtime.sharedState}</h2>
+            </div>
+            <p className="muted-copy">{copy.runtime.sharedStateBody}</p>
+            <div className="path-list compact">
+              <div>
+                <span>HERMES_HOME</span>
+                <strong>{runtime.paths.hermesHome}</strong>
+              </div>
+              <div>
+                <span>{copy.runtime.python}</span>
+                <strong>{runtime.python.executable}</strong>
+              </div>
+            </div>
+          </section>
+
+          <section className="rail-card">
+            <div className="section-head">
+              <h2>{copy.runtime.tools}</h2>
+            </div>
+            <div className="action-list">
+              <button className="secondary-button" onClick={() => void window.desktop.openHermesHome()}>
+                {copy.diagnostics.openHome}
+              </button>
+              <button className="secondary-button" onClick={() => void window.desktop.openLogsDirectory()}>
+                {copy.diagnostics.openLogs}
+              </button>
+              <button className="secondary-button" onClick={() => void window.desktop.openOpenSourceNotes()}>
+                {copy.diagnostics.openNotes}
+              </button>
+            </div>
+          </section>
+        </aside>
+
+        <main className="content-area">
+          <section className="page-hero">
+            <div>
+              <p className="eyebrow">{environment.productVersion}</p>
+              <h2>
+                {page === 'workspace'
+                  ? copy.pageCopy.workspaceTitle
+                  : page === 'quick-run'
+                    ? copy.pageCopy.quickRunTitle
+                    : page === 'commands'
+                      ? copy.pageCopy.commandsTitle
+                      : copy.pageCopy.diagnosticsTitle}
+              </h2>
+              <p className="hero-copy">
+                {page === 'workspace'
+                  ? dashboardReady
+                    ? copy.pageCopy.workspaceBody
+                    : copy.pageCopy.workspaceWaiting
+                  : page === 'quick-run'
+                    ? apiReady
+                      ? copy.pageCopy.quickRunBody
+                      : copy.pageCopy.quickRunWaiting
+                    : page === 'commands'
+                      ? copy.pageCopy.commandsBody
+                      : copy.pageCopy.diagnosticsBody}
+              </p>
+            </div>
+          </section>
+
+          {notice && <section className="notice-banner">{notice}</section>}
+
+          {page === 'workspace' && (
+            <div className="workspace-grid">
+              <section className="surface-card dashboard-panel">
+                {dashboardReady ? (
+                  <iframe title={copy.pageCopy.workspaceTitle} src={runtime.dashboard.url ?? undefined} />
+                ) : (
+                  <div className="empty-panel">
+                    <h3>{copy.runtime.dashboard}</h3>
+                    <p>{copy.pageCopy.workspaceWaiting}</p>
+                  </div>
+                )}
+              </section>
+
+              <aside className="workspace-side">
+                <section className="surface-card">
+                  <div className="section-head">
+                    <h3>{copy.misc.modelAndAuth}</h3>
+                  </div>
+                  <div className="mini-command-list">
+                    {commandGroups[0].cards.map((card) => (
+                      <button
+                        key={card.command}
+                        className="command-link"
+                        disabled={launchingCommand === card.command}
+                        onClick={() => void handleLaunchCommand(card.command)}
+                      >
+                        <div>
+                          <strong>{card.title}</strong>
+                          <span>{card.shell}</span>
+                        </div>
+                        <small>{launchingCommand === card.command ? copy.commands.launching : copy.misc.open}</small>
+                      </button>
+                    ))}
+                  </div>
+                </section>
+
+                <section className="surface-card">
+                  <div className="section-head">
+                    <h3>{copy.misc.sessionsAndTerminal}</h3>
+                  </div>
+                  <div className="mini-command-list">
+                    {commandGroups[1].cards.map((card) => (
+                      <button
+                        key={card.command}
+                        className="command-link"
+                        disabled={launchingCommand === card.command}
+                        onClick={() => void handleLaunchCommand(card.command)}
+                      >
+                        <div>
+                          <strong>{card.title}</strong>
+                          <span>{card.shell}</span>
+                        </div>
+                        <small>{launchingCommand === card.command ? copy.commands.launching : copy.misc.open}</small>
+                      </button>
+                    ))}
+                  </div>
+                </section>
+
+                <section className="surface-card">
+                  <div className="section-head">
+                    <h3>{copy.runtime.paths}</h3>
+                  </div>
+                  <div className="path-list compact">
+                    <div>
+                      <span>{copy.runtime.dashboard}</span>
+                      <strong>{formatValue(runtime.dashboard.url, copy.runtime.offline)}</strong>
+                    </div>
+                    <div>
+                      <span>{copy.runtime.api}</span>
+                      <strong>{formatValue(runtime.api.url, copy.runtime.offline)}</strong>
+                    </div>
+                    <div>
+                      <span>{copy.runtime.logs}</span>
+                      <strong>{runtime.paths.logsDir}</strong>
+                    </div>
+                  </div>
+                </section>
+              </aside>
+            </div>
+          )}
+
+          {page === 'quick-run' && (
+            <div className="chat-grid">
+              <section className="surface-card chat-panel">
+                <div className="section-head align-start">
+                  <div>
+                    <p className="eyebrow">{copy.quickRun.session}</p>
+                    <h3>{copy.quickRun.messages}</h3>
+                  </div>
+                  <button className="secondary-button" onClick={handleNewSession}>
+                    {copy.quickRun.newSession}
                   </button>
                 </div>
-              </div>
-            </section>
 
-            <aside className="activity-column">
-              <div className="panel-card">
-                <div className="panel-head">
-                  <h2>{copy.activity}</h2>
+                <div className="session-pill">
+                  <span>{copy.quickRun.sessionId}</span>
+                  <strong>{sessionId}</strong>
                 </div>
-                <div className="activity-list">
-                  {activity.length === 0 && <div className="empty-state">{copy.emptyChat}</div>}
-                  {activity.map((item) => (
-                    <article key={item.id} className={`activity-item ${item.kind}`}>
-                      <strong>{item.title}</strong>
-                      <p>{item.detail}</p>
-                    </article>
-                  ))}
+
+                <div className="message-stream">
+                  {messages.length === 0 ? (
+                    <div className="empty-panel compact">
+                      <h3>{copy.quickRun.messages}</h3>
+                      <p>{copy.quickRun.emptyMessages}</p>
+                    </div>
+                  ) : (
+                    messages.map((message) => (
+                      <article key={message.id} className={`message-bubble ${message.role}`}>
+                        <header>
+                          <span>
+                            {message.role === 'user'
+                              ? copy.quickRun.user
+                              : message.role === 'assistant'
+                                ? copy.quickRun.assistant
+                                : copy.quickRun.system}
+                          </span>
+                          <small>{message.status}</small>
+                        </header>
+                        <p>{message.content || (message.status === 'streaming' ? '…' : '')}</p>
+                      </article>
+                    ))
+                  )}
                 </div>
-              </div>
-            </aside>
-          </div>
-        ) : page === 'dashboard' ? (
-          <section className="dashboard-card">
-            {runtime.dashboard.url && runtime.dashboard.status === 'ready' ? (
-              <iframe title={copy.dashboardEmbed} src={runtime.dashboard.url} />
-            ) : (
-              <div className="empty-state large">{copy.dashboardWaiting}</div>
-            )}
-          </section>
-        ) : (
-          <section className="bridge-layout">
-            <div className="bridge-summary">
-              <div className="panel-card">
-                <div className="panel-head">
-                  <h2>{copy.bridgeSharedState}</h2>
+
+                <div className="composer-panel">
+                  <textarea
+                    value={composer}
+                    placeholder={copy.quickRun.composerPlaceholder}
+                    onChange={(event) => setComposer(event.target.value)}
+                    onKeyDown={(event) => {
+                      if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+                        event.preventDefault()
+                        void handleSend()
+                      }
+                    }}
+                  />
+                  <div className="composer-footer">
+                    <span>{copy.quickRun.ctrlEnter}</span>
+                    <button className="primary-button" disabled={busy} onClick={() => void handleSend()}>
+                      {busy ? copy.quickRun.sending : copy.quickRun.send}
+                    </button>
+                  </div>
                 </div>
-                <p className="bridge-copy">{copy.bridgeSharedStateDesc}</p>
-                <p className="bridge-copy">{copy.bridgeHint}</p>
-                <div className="bridge-meta">
+              </section>
+
+              <aside className="chat-side">
+                <section className="surface-card">
+                  <div className="section-head">
+                    <h3>{copy.quickRun.activity}</h3>
+                    <span className={`status-pill ${statusTone(runtime.api.status)}`}>
+                      {apiReady ? copy.quickRun.runReady : copy.quickRun.runWaiting}
+                    </span>
+                  </div>
+                  <div className="activity-list">
+                    {activity.length === 0 ? (
+                      <div className="empty-panel compact">
+                        <h3>{copy.quickRun.activity}</h3>
+                        <p>{copy.quickRun.emptyActivity}</p>
+                      </div>
+                    ) : (
+                      activity.map((item) => (
+                        <article key={item.id} className={`activity-item ${item.kind}`}>
+                          <strong>{item.title}</strong>
+                          <p>{item.detail}</p>
+                        </article>
+                      ))
+                    )}
+                  </div>
+                </section>
+
+                <section className="surface-card">
+                  <div className="section-head">
+                    <h3>{copy.misc.toolsAndGateway}</h3>
+                  </div>
+                  <div className="mini-command-list">
+                    {commandGroups[2].cards.map((card) => (
+                      <button
+                        key={card.command}
+                        className="command-link"
+                        disabled={launchingCommand === card.command}
+                        onClick={() => void handleLaunchCommand(card.command)}
+                      >
+                        <div>
+                          <strong>{card.title}</strong>
+                          <span>{card.shell}</span>
+                        </div>
+                        <small>{launchingCommand === card.command ? copy.commands.launching : copy.misc.open}</small>
+                      </button>
+                    ))}
+                  </div>
+                </section>
+              </aside>
+            </div>
+          )}
+
+          {page === 'commands' && (
+            <div className="commands-layout">
+              {commandGroups.map((group) => (
+                <section key={group.id} className="surface-card">
+                  <div className="section-head align-start">
+                    <div>
+                      <h3>{group.title}</h3>
+                      <p className="muted-copy">{group.description}</p>
+                    </div>
+                  </div>
+                  <div className="command-grid">
+                    {group.cards.map((card) => (
+                      <article key={card.command} className="command-card">
+                        <div>
+                          <p className="eyebrow">{card.shell}</p>
+                          <h4>{card.title}</h4>
+                          <p>{card.description}</p>
+                        </div>
+                        <button
+                          className="primary-button"
+                          disabled={launchingCommand === card.command}
+                          onClick={() => void handleLaunchCommand(card.command)}
+                        >
+                          {launchingCommand === card.command ? copy.commands.launching : copy.commands.launch}
+                        </button>
+                      </article>
+                    ))}
+                  </div>
+                </section>
+              ))}
+            </div>
+          )}
+
+          {page === 'diagnostics' && (
+            <div className="diagnostics-layout">
+              <section className="surface-card">
+                <div className="section-head">
+                  <h3>{copy.diagnostics.serviceState}</h3>
+                </div>
+                <div className="status-grid">
+                  <article className="status-card">
+                    <span>{copy.runtime.section}</span>
+                    <strong>{runtimeStatusLabel(locale, runtime.overallStatus)}</strong>
+                    <small>{formatTimestamp(locale, runtime.dashboard.startedAt ?? runtime.api.startedAt)}</small>
+                  </article>
+                  <article className="status-card">
+                    <span>{copy.runtime.dashboard}</span>
+                    <strong>{serviceStatusLabel(locale, runtime.dashboard.status)}</strong>
+                    <small>{formatValue(runtime.dashboard.port, copy.runtime.offline)}</small>
+                  </article>
+                  <article className="status-card">
+                    <span>{copy.runtime.api}</span>
+                    <strong>{serviceStatusLabel(locale, runtime.api.status)}</strong>
+                    <small>{formatValue(runtime.api.port, copy.runtime.offline)}</small>
+                  </article>
+                  <article className="status-card">
+                    <span>{copy.runtime.dependencies}</span>
+                    <strong>
+                      {dependencyState.allReady
+                        ? copy.diagnostics.dependencyReady
+                        : copy.diagnostics.dependencyMissing}
+                    </strong>
+                    <small>
+                      {dependencyState.readyCount}/{dependencyState.totalCount}
+                    </small>
+                  </article>
+                </div>
+              </section>
+
+              {(runtime.lastError || runtime.dashboard.lastError || runtime.api.lastError) && (
+                <section className="surface-card warning-card">
+                  <div className="section-head">
+                    <h3>{copy.diagnostics.lastError}</h3>
+                  </div>
+                  <p>{runtime.lastError ?? runtime.dashboard.lastError ?? runtime.api.lastError}</p>
+                </section>
+              )}
+
+              <section className="surface-card">
+                <div className="section-head">
+                  <h3>{copy.runtime.paths}</h3>
+                </div>
+                <div className="path-list">
                   <div>
-                    <span>Hermes Home</span>
+                    <span>HERMES_HOME</span>
                     <strong>{runtime.paths.hermesHome}</strong>
                   </div>
                   <div>
-                    <span>Python</span>
+                    <span>{copy.runtime.logs}</span>
+                    <strong>{runtime.paths.logsDir}</strong>
+                  </div>
+                  <div>
+                    <span>Config</span>
+                    <strong>{runtime.paths.configDir}</strong>
+                  </div>
+                  <div>
+                    <span>Data</span>
+                    <strong>{runtime.paths.dataDir}</strong>
+                  </div>
+                  <div>
+                    <span>{copy.runtime.python}</span>
                     <strong>{runtime.python.executable}</strong>
                   </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bridge-grid">
-              {companionCards.map((card) => (
-                <article key={card.command} className="bridge-card">
                   <div>
-                    <p className="eyebrow">Hermes Command</p>
-                    <h3>{card.title}</h3>
-                    <p className="bridge-copy">{card.description}</p>
+                    <span>Version</span>
+                    <strong>{formatValue(runtime.python.version, copy.misc.unknown)}</strong>
                   </div>
-                  <button
-                    className="primary"
-                    disabled={launchingCommand === card.command}
-                    onClick={() => void handleLaunchCommand(card.command)}
-                  >
-                    {launchingCommand === card.command ? copy.launching : copy.launch}
-                  </button>
-                </article>
-              ))}
+                </div>
+              </section>
+
+              <section className="surface-card">
+                <div className="section-head">
+                  <h3>{copy.runtime.logs}</h3>
+                  <div className="toggle-group">
+                    <button
+                      className={activeLog === 'dashboard' ? 'active' : ''}
+                      onClick={() => setActiveLog('dashboard')}
+                    >
+                      {copy.diagnostics.dashboardLog}
+                    </button>
+                    <button
+                      className={activeLog === 'gateway' ? 'active' : ''}
+                      onClick={() => setActiveLog('gateway')}
+                    >
+                      {copy.diagnostics.gatewayLog}
+                    </button>
+                  </div>
+                </div>
+                <pre>{currentLogs.join('\n') || copy.diagnostics.noLogs}</pre>
+              </section>
             </div>
-          </section>
-        )}
-      </section>
+          )}
+        </main>
+      </div>
     </div>
   )
 }
