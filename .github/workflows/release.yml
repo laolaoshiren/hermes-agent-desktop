@@ -6,6 +6,9 @@ on:
       - 'v*'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   publish:
     strategy:
@@ -14,10 +17,19 @@ jobs:
         include:
           - os: windows-latest
             publish_args: --win nsis portable
+            asset_glob: |
+              release/*.exe
+              release/latest.yml
           - os: macos-latest
             publish_args: --mac dmg zip
+            asset_glob: |
+              release/*.dmg
+              release/*.zip
           - os: ubuntu-latest
             publish_args: --linux AppImage tar.gz
+            asset_glob: |
+              release/*.AppImage
+              release/*.tar.gz
 
     runs-on: ${{ matrix.os }}
 
@@ -40,8 +52,13 @@ jobs:
       - name: Smoke Test
         run: npm run smoke
 
-      - name: Publish Artifacts
+      - name: Build Installers
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CSC_IDENTITY_AUTO_DISCOVERY: false
-        run: npx electron-builder --publish always ${{ matrix.publish_args }}
+        run: npx electron-builder --publish never ${{ matrix.publish_args }}
+
+      - name: Upload Release Assets
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ matrix.asset_glob }}
