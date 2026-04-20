@@ -9,7 +9,6 @@
     "start": "electron ."
   },
   "dependencies": {
-    "@product/adapter": "0.1.0",
     "@product/runtime-manager": "0.1.0",
     "@product/shared": "0.1.0",
     "electron": "^37.2.0"

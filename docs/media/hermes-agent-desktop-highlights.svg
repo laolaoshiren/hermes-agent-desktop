@@ -1,65 +1,127 @@
 <svg width="1440" height="900" viewBox="0 0 1440 900" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="hero" x1="90" y1="70" x2="1320" y2="830" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#071421"/>
-      <stop offset="0.58" stop-color="#0F2740"/>
-      <stop offset="1" stop-color="#125046"/>
+    <linearGradient id="bg" x1="70" y1="44" x2="1366" y2="850" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0A1724"/>
+      <stop offset="0.54" stop-color="#12314C"/>
+      <stop offset="1" stop-color="#0F6A61"/>
     </linearGradient>
-    <linearGradient id="card-a" x1="122" y1="250" x2="656" y2="464" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#FFFFFF"/>
-      <stop offset="1" stop-color="#EEF8F1"/>
+    <linearGradient id="cardA" x1="112" y1="268" x2="664" y2="510" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFDF5"/>
+      <stop offset="1" stop-color="#F3FBF8"/>
     </linearGradient>
-    <linearGradient id="card-b" x1="784" y1="250" x2="1318" y2="464" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#FFFFFF"/>
-      <stop offset="1" stop-color="#EFF6FF"/>
+    <linearGradient id="cardB" x1="776" y1="268" x2="1328" y2="510" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F8FBFF"/>
+      <stop offset="1" stop-color="#EDF7FF"/>
     </linearGradient>
-    <linearGradient id="card-c" x1="122" y1="520" x2="656" y2="734" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#FFFFFF"/>
-      <stop offset="1" stop-color="#FFF7ED"/>
+    <linearGradient id="cardC" x1="112" y1="534" x2="664" y2="776" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF8F1"/>
+      <stop offset="1" stop-color="#FFFDF5"/>
     </linearGradient>
-    <linearGradient id="card-d" x1="784" y1="520" x2="1318" y2="734" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#FFFFFF"/>
-      <stop offset="1" stop-color="#F5F3FF"/>
+    <linearGradient id="cardD" x1="776" y1="534" x2="1328" y2="776" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F6F8FF"/>
+      <stop offset="1" stop-color="#F0FBF7"/>
     </linearGradient>
   </defs>
 
-  <rect width="1440" height="900" fill="#E5E7EB"/>
-  <rect x="32" y="30" width="1376" height="840" rx="36" fill="url(#hero)"/>
+  <rect width="1440" height="900" fill="#DDE7E3"/>
+  <rect x="30" y="28" width="1380" height="844" rx="38" fill="url(#bg)"/>
+  <rect x="30.5" y="28.5" width="1379" height="843" rx="37.5" stroke="#FFFFFF" stroke-opacity="0.16"/>
 
-  <circle cx="1222" cy="122" r="108" fill="#38BDF8" fill-opacity="0.15"/>
-  <circle cx="1306" cy="794" r="168" fill="#22C55E" fill-opacity="0.12"/>
-  <circle cx="122" cy="790" r="140" fill="#F59E0B" fill-opacity="0.08"/>
+  <circle cx="1224" cy="118" r="110" fill="#38BDF8" fill-opacity="0.14"/>
+  <circle cx="1308" cy="800" r="164" fill="#34D399" fill-opacity="0.14"/>
+  <circle cx="122" cy="790" r="144" fill="#F59E0B" fill-opacity="0.1"/>
 
-  <rect x="94" y="86" width="256" height="42" rx="21" fill="rgba(255,255,255,0.08)"/>
-  <text x="122" y="113" fill="#BFDBFE" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700">Hermes Ecosystem • Open Source • Desktop Product</text>
+  <rect x="90" y="82" width="356" height="42" rx="21" fill="#FFFFFF" fill-opacity="0.1"/>
+  <text x="118" y="109" fill="#BAE6FD" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="18" font-weight="700">
+    Hermes Agent Console · desktop GUI + sidecar runtime
+  </text>
 
-  <text x="94" y="192" fill="#FFFFFF" font-family="Segoe UI, Arial, sans-serif" font-size="64" font-weight="800">What ships in Hermes Agent Desktop</text>
-  <text x="94" y="244" fill="#CBD5E1" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="500">不是把 Hermes 生搬硬套到桌面，而是先把桌面产品完整度做好。</text>
+  <text x="90" y="188" fill="#FFFFFF" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="62" font-weight="800">
+    What actually ships in this repo
+  </text>
+  <text x="90" y="242" fill="#D5E7F2" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="28" font-weight="500">
+    不是旧叙述里的“演示层”，而是一个能控制真实 Hermes sidecar 的桌面产品层。
+  </text>
 
-  <rect x="94" y="288" width="566" height="188" rx="28" fill="url(#card-a)"/>
-  <text x="128" y="336" fill="#047857" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="800">CHINESE-FIRST PRODUCT</text>
-  <text x="128" y="382" fill="#0F172A" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="800">中文优先，英文为辅</text>
-  <text x="128" y="424" fill="#334155" font-family="Segoe UI, Arial, sans-serif" font-size="18">默认中文界面，设置内可切换 English。</text>
-  <text x="128" y="454" fill="#334155" font-family="Segoe UI, Arial, sans-serif" font-size="18">更适合中文用户直接安装、直接配置、直接使用。</text>
+  <rect x="90" y="286" width="576" height="196" rx="30" fill="url(#cardA)"/>
+  <text x="124" y="334" fill="#0F766E" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="16" font-weight="800">
+    GUI CONSOLE
+  </text>
+  <text x="124" y="380" fill="#0F172A" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="32" font-weight="800">
+    中文优先桌面控制台
+  </text>
+  <text x="124" y="422" fill="#334155" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="19">
+    聊天页、Dashboard 页、运行时状态、日志面板、语言切换与目录入口
+  </text>
+  <text x="124" y="454" fill="#475569" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="18">
+    Chat, dashboard, runtime controls, logs, locale toggle, local folders.
+  </text>
 
-  <rect x="780" y="288" width="566" height="188" rx="28" fill="url(#card-b)"/>
-  <text x="814" y="336" fill="#1D4ED8" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="800">MULTI-PLATFORM DELIVERY</text>
-  <text x="814" y="382" fill="#0F172A" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="800">一套仓库，三端发布</text>
-  <text x="814" y="424" fill="#334155" font-family="Segoe UI, Arial, sans-serif" font-size="18">Windows 安装版 + 便携版，macOS dmg + zip，Linux AppImage + tar.gz。</text>
-  <text x="814" y="454" fill="#334155" font-family="Segoe UI, Arial, sans-serif" font-size="18">GitHub Actions 负责 CI、打包和 release 交付。</text>
+  <rect x="754" y="286" width="576" height="196" rx="30" fill="url(#cardB)"/>
+  <text x="788" y="334" fill="#2563EB" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="16" font-weight="800">
+    REAL HERMES SIDECAR
+  </text>
+  <text x="788" y="380" fill="#0F172A" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="32" font-weight="800">
+    Dashboard 与 Gateway 真正启动
+  </text>
+  <text x="788" y="422" fill="#334155" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="19">
+    本地 Python sidecar 暴露 `/api/status`、`/health`、`/v1/runs` 和 SSE。
+  </text>
+  <text x="788" y="454" fill="#475569" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="18">
+    Vendored Hermes runtime and web assets are packaged into the desktop app.
+  </text>
 
-  <rect x="94" y="522" width="566" height="188" rx="28" fill="url(#card-c)"/>
-  <text x="128" y="570" fill="#D97706" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="800">LOCAL QUALITY GATES</text>
-  <text x="128" y="616" fill="#0F172A" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="800">不是“感觉可用”，而是可验证</text>
-  <text x="128" y="658" fill="#334155" font-family="Segoe UI, Arial, sans-serif" font-size="18">build、smoke、adapter E2E、Windows 安装包验证、GitHub release 校验都可本地执行。</text>
-  <text x="128" y="688" fill="#334155" font-family="Segoe UI, Arial, sans-serif" font-size="18">问题能定位到接口、打包、工作流，而不只是“用户说有 bug”。</text>
+  <rect x="90" y="538" width="576" height="196" rx="30" fill="url(#cardC)"/>
+  <text x="124" y="586" fill="#D97706" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="16" font-weight="800">
+    QUALITY GATES
+  </text>
+  <text x="124" y="632" fill="#0F172A" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="32" font-weight="800">
+    可验证，不靠猜测
+  </text>
+  <text x="124" y="674" fill="#334155" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="19">
+    `build` 准备 sidecar 与 Web，`smoke` 做探活，`test:e2e` 跑真实 runs，`test:package:win`
+  </text>
+  <text x="124" y="706" fill="#475569" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="18">
+    verifies installers, packaged Python, dashboard assets, and app startup.
+  </text>
 
-  <rect x="780" y="522" width="566" height="188" rx="28" fill="url(#card-d)"/>
-  <text x="814" y="570" fill="#7C3AED" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="800">HERMES-ORIENTED ARCHITECTURE</text>
-  <text x="814" y="616" fill="#0F172A" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="800">保留 Hermes 边界，不装作已全量打通</text>
-  <text x="814" y="658" fill="#334155" font-family="Segoe UI, Arial, sans-serif" font-size="18">当前主路径是 direct-provider mode，未来继续推进 Hermes-native runtime bridge。</text>
-  <text x="814" y="688" fill="#334155" font-family="Segoe UI, Arial, sans-serif" font-size="18">这样能先交付桌面产品，再逐步深化底层能力。</text>
+  <rect x="754" y="538" width="576" height="196" rx="30" fill="url(#cardD)"/>
+  <text x="788" y="586" fill="#7C3AED" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="16" font-weight="800">
+    OPEN RELEASE FLOW
+  </text>
+  <text x="788" y="632" fill="#0F172A" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="32" font-weight="800">
+    一套仓库，多平台交付
+  </text>
+  <text x="788" y="674" fill="#334155" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="19">
+    GitHub Actions 在 tag 发布时构建 Windows、macOS、Linux 产物并上传 Release。
+  </text>
+  <text x="788" y="706" fill="#475569" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="18">
+    setup.exe, portable.exe, dmg, zip, AppImage, and tar.gz are first-class assets.
+  </text>
 
-  <rect x="94" y="758" width="1252" height="66" rx="22" fill="rgba(255,255,255,0.08)"/>
-  <text x="126" y="800" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="700">OpenAI / OpenRouter / Anthropic / Ollama / OpenAI-compatible · Sessions · Attachments · Diagnostics · Updates · GitHub Releases</text>
+  <rect x="90" y="786" width="1240" height="52" rx="26" fill="#FFFFFF" fill-opacity="0.1"/>
+  <circle cx="174" cy="812" r="10" fill="#F4D35E"/>
+  <text x="194" y="819" fill="#FFFFFF" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="18" font-weight="700">
+    React GUI
+  </text>
+  <path d="M296 812H356" stroke="#BFDBFE" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="376" cy="812" r="10" fill="#7DD3FC"/>
+  <text x="396" y="819" fill="#FFFFFF" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="18" font-weight="700">
+    Electron
+  </text>
+  <path d="M490 812H566" stroke="#BFDBFE" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="586" cy="812" r="10" fill="#86EFAC"/>
+  <text x="606" y="819" fill="#FFFFFF" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="18" font-weight="700">
+    runtime-manager
+  </text>
+  <path d="M806 812H878" stroke="#BFDBFE" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="898" cy="812" r="10" fill="#38BDF8"/>
+  <text x="918" y="819" fill="#FFFFFF" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="18" font-weight="700">
+    Hermes sidecar
+  </text>
+  <path d="M1066 812H1142" stroke="#BFDBFE" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="1162" cy="812" r="10" fill="#C4B5FD"/>
+  <text x="1182" y="819" fill="#FFFFFF" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="18" font-weight="700">
+    GitHub Releases
+  </text>
 </svg>

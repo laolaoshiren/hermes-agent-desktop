@@ -1,169 +1,27 @@
 import type { BrandConfig } from './branding.js'
-import type { AppError } from './errors.js'
 
-export type Channel = 'stable' | 'beta'
 export type Locale = 'zh-CN' | 'en-US'
 export type ThemeMode = 'light' | 'dark' | 'system'
-export type RuntimeStatus = 'starting' | 'ready' | 'degraded' | 'failed'
-export type ProviderType =
-  | 'openai'
-  | 'anthropic'
-  | 'openai-compatible'
-  | 'openrouter'
-  | 'ollama'
-  | 'custom'
-export type UpdateStage =
-  | 'idle'
-  | 'checking'
-  | 'available'
-  | 'downloading'
-  | 'downloaded'
-  | 'failed'
-export type MessageRole = 'user' | 'assistant' | 'system'
-export type MessageStatus = 'idle' | 'streaming' | 'completed' | 'cancelled' | 'failed'
-export type AttachmentStatus = 'prepared' | 'committed' | 'failed'
-export type AttachmentKind = 'file' | 'image'
-
-export interface CapabilityFlags {
-  supportsNativeShellTooling: boolean
-  supportsPtyFull: boolean
-  supportsSecureStorage: boolean
-  supportsAutoUpdate: boolean
-  supportsImagePaste: boolean
-  supportsDragDropAttachments: boolean
-}
-
-export interface BootstrapState {
-  app: {
-    productName: string
-    productVersion: string
-    channel: Channel
-    locale: Locale
-    theme: ThemeMode
-  }
-  runtime: {
-    runtimeVersion: string
-    upstreamHermesVersion: string
-    status: RuntimeStatus
-  }
-  onboarding: {
-    isCompleted: boolean
-    missingFields: string[]
-  }
-  provider: {
-    configured: boolean
-    providerType: ProviderType
-    model: string | null
-    baseUrl: string | null
-  }
-  capabilities: CapabilityFlags
-  updates: {
-    autoUpdateEnabled: boolean
-    state: UpdateStage
-  }
-}
-
-export interface ProviderSettings {
-  providerType: ProviderType
-  apiKey: string
-  baseUrl: string
-  model: string
-  organization: string
-  extraHeaders: Record<string, string>
-}
-
-export interface AppSettings {
-  locale: Locale
-  theme: ThemeMode
-  autoUpdateEnabled: boolean
-  updateChannel: Channel
-  restoreLastSession: boolean
-  diagnosticsPreference: 'redacted'
-}
-
-export interface ProviderTestResult {
-  success: boolean
-  latencyMs: number
-  message: string
-  resolvedModel: string | null
-}
-
-export interface SessionSummary {
-  id: string
-  title: string
-  lastMessagePreview: string
-  updatedAt: string
-  messageCount: number
-  pinned: boolean
-}
-
-export interface AttachmentItem {
-  id: string
-  name: string
-  size: number
-  mimeType: string
-  kind: AttachmentKind
-  status: AttachmentStatus
-  localPath: string
-  previewDataUrl: string | null
-}
-
-export interface MessageItem {
-  id: string
-  sessionId: string
-  role: MessageRole
-  content: string
-  createdAt: string
-  status: MessageStatus
-  attachmentIds: string[]
-}
-
-export interface ToolItem {
-  id: string
-  name: string
-  description: string
-  enabled: boolean
-  risk: 'low' | 'medium' | 'high' | null
-}
-
-export interface SkillItem {
-  id: string
-  name: string
-  description: string
-  enabled: boolean
-  risk: 'low' | 'medium' | 'high' | null
-}
-
-export interface UpdateState {
-  state: UpdateStage
-  autoUpdateEnabled: boolean
-  channel: Channel
-  currentVersion: string
-  availableVersion: string | null
-  downloadedVersion: string | null
-  lastCheckedAt: string | null
-  message: string
-}
-
-export interface HealthSnapshot {
-  appStatus: 'ready' | 'degraded'
-  adapterStatus: 'ready' | 'degraded'
-  runtimeStatus: RuntimeStatus
-  providerStatus: 'configured' | 'missing'
-  lastCheckedAt: string | null
-  capabilities: CapabilityFlags
-  updateState: UpdateState
-}
-
-export interface DesktopEnvironment {
-  adapterBaseUrl: string
-  productName: string
-  productVersion: string
-  paths: {
-    dataDir: string
-    logsDir: string
-  }
-}
+export type RuntimeStatus = 'stopped' | 'starting' | 'ready' | 'degraded' | 'failed'
+export type ServiceStatus = 'stopped' | 'starting' | 'ready' | 'failed'
+export type PythonBootstrapState = 'ready' | 'missing-deps'
+export type DesktopPage = 'chat' | 'dashboard' | 'bridge'
+export type HermesMessageRole = 'user' | 'assistant' | 'system'
+export type HermesCompanionCommand =
+  | 'chat-tui'
+  | 'sessions'
+  | 'model'
+  | 'tools'
+  | 'auth'
+  | 'profile'
+  | 'gateway-setup'
+export type HermesRunEventType =
+  | 'message.delta'
+  | 'tool.started'
+  | 'tool.completed'
+  | 'reasoning.available'
+  | 'run.completed'
+  | 'run.failed'
 
 export interface AppPaths {
   configDir: string
@@ -173,41 +31,116 @@ export interface AppPaths {
   updatesDir: string
   exportsDir: string
   attachmentsDir: string
+  hermesHome: string
   brand: BrandConfig
 }
 
-export interface SendMessageRequest {
-  text: string
-  attachmentIds?: string[]
-  enabledTools?: string[]
-  enabledSkills?: string[]
+export interface DesktopSettings {
+  locale: Locale
+  theme: ThemeMode
+  launchOnStartup: boolean
+  openDashboardOnLaunch: boolean
 }
 
-export type StreamEventType =
-  | 'message.started'
-  | 'message.delta'
-  | 'message.completed'
-  | 'tool.started'
-  | 'tool.completed'
-  | 'skill.started'
-  | 'skill.completed'
-  | 'warning'
-  | 'error'
-
-export interface StreamEvent<T = Record<string, unknown>> {
-  type: StreamEventType
-  payload: T
+export interface RuntimeServiceSnapshot {
+  status: ServiceStatus
+  port: number | null
+  url: string | null
+  pid: number | null
+  startedAt: string | null
+  lastError: string | null
+  lastExitCode: number | null
 }
 
-export interface DiagnosticsExportResult {
-  path: string
+export interface RuntimeDependencyStatus {
+  fastapi: boolean
+  uvicorn: boolean
+  aiohttp: boolean
+  yaml: boolean
+  pydantic: boolean
 }
 
-export interface CapabilitiesPayload {
-  tools: ToolItem[]
-  skills: SkillItem[]
+export interface PythonRuntimeSnapshot {
+  executable: string
+  version: string | null
+  sitePackagesDir: string
+  bootstrapState: PythonBootstrapState
+  dependencies: RuntimeDependencyStatus
 }
 
-export interface AdapterErrorResponse {
-  error: AppError
+export interface HermesRuntimeSnapshot {
+  overallStatus: RuntimeStatus
+  appVersion: string
+  upstreamHermesVersion: string
+  lastError: string | null
+  paths: {
+    hermesHome: string
+    dataDir: string
+    logsDir: string
+    configDir: string
+  }
+  python: PythonRuntimeSnapshot
+  dashboard: RuntimeServiceSnapshot
+  api: RuntimeServiceSnapshot & {
+    apiKey: string | null
+  }
+}
+
+export interface DesktopEnvironment {
+  productName: string
+  productVersion: string
+  locale: Locale
+  defaultPage: DesktopPage
+  settings: DesktopSettings
+  runtime: HermesRuntimeSnapshot
+}
+
+export interface RuntimeCommandResult {
+  snapshot: HermesRuntimeSnapshot
+}
+
+export interface CompanionCommandResult {
+  command: HermesCompanionCommand
+}
+
+export interface RuntimeLogTail {
+  dashboard: string[]
+  gateway: string[]
+}
+
+export interface HermesConversationMessage {
+  role: HermesMessageRole
+  content: string
+}
+
+export interface HermesRunRequest {
+  input: string
+  conversationHistory: HermesConversationMessage[]
+  instructions?: string | null
+  sessionId?: string | null
+}
+
+export interface HermesRunStartResponse {
+  run_id: string
+  status: 'started'
+}
+
+export interface HermesRunUsage {
+  input_tokens: number
+  output_tokens: number
+  total_tokens: number
+}
+
+export interface HermesRunEvent {
+  event: HermesRunEventType
+  run_id: string
+  timestamp: number
+  delta?: string
+  tool?: string
+  preview?: string | null
+  duration?: number
+  error?: string | boolean
+  text?: string
+  output?: string
+  usage?: HermesRunUsage
 }

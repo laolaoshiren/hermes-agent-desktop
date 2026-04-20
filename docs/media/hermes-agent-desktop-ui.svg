@@ -1,118 +1,233 @@
 <svg width="1440" height="920" viewBox="0 0 1440 920" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="page-bg" x1="108" y1="58" x2="1318" y2="860" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#F8FBF7"/>
-      <stop offset="1" stop-color="#E3F0EA"/>
+    <linearGradient id="page" x1="86" y1="52" x2="1354" y2="864" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FBF6EA"/>
+      <stop offset="1" stop-color="#E5F1EA"/>
     </linearGradient>
-    <linearGradient id="sidebar" x1="118" y1="100" x2="388" y2="790" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#091523"/>
-      <stop offset="1" stop-color="#13273B"/>
+    <linearGradient id="sidebar" x1="96" y1="94" x2="364" y2="814" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0B1724"/>
+      <stop offset="1" stop-color="#133048"/>
     </linearGradient>
-    <linearGradient id="workspace" x1="410" y1="170" x2="1012" y2="792" gradientUnits="userSpaceOnUse">
+    <linearGradient id="main" x1="396" y1="94" x2="1018" y2="812" gradientUnits="userSpaceOnUse">
       <stop stop-color="#FFFFFF"/>
-      <stop offset="1" stop-color="#EFF7F1"/>
+      <stop offset="1" stop-color="#F4FBF6"/>
     </linearGradient>
-    <linearGradient id="assistant-bubble" x1="530" y1="386" x2="930" y2="560" gradientUnits="userSpaceOnUse">
+    <linearGradient id="activity" x1="1046" y1="94" x2="1346" y2="812" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#F5F8FF"/>
+    </linearGradient>
+    <linearGradient id="assistant" x1="464" y1="372" x2="962" y2="554" gradientUnits="userSpaceOnUse">
       <stop stop-color="#DBEAFE"/>
       <stop offset="1" stop-color="#D1FAE5"/>
     </linearGradient>
-    <linearGradient id="panel" x1="1030" y1="106" x2="1284" y2="784" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#FFFFFF"/>
-      <stop offset="1" stop-color="#F7FBF8"/>
-    </linearGradient>
   </defs>
 
-  <rect width="1440" height="920" fill="#E5E7EB"/>
-  <rect x="40" y="36" width="1360" height="848" rx="34" fill="url(#page-bg)"/>
-  <rect x="40.5" y="36.5" width="1359" height="847" rx="33.5" stroke="#D7E3DA"/>
+  <rect width="1440" height="920" fill="#DDE7E2"/>
+  <rect x="40" y="36" width="1360" height="848" rx="34" fill="url(#page)"/>
+  <rect x="40.5" y="36.5" width="1359" height="847" rx="33.5" stroke="#D4E2D8"/>
 
-  <rect x="86" y="88" width="286" height="744" rx="26" fill="url(#sidebar)"/>
-  <text x="120" y="138" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="800">Hermes Agent Desktop</text>
-  <text x="120" y="172" fill="#93C5FD" font-family="Segoe UI, Arial, sans-serif" font-size="15" font-weight="700">Chinese-first AI workspace</text>
+  <rect x="84" y="86" width="288" height="748" rx="28" fill="url(#sidebar)"/>
+  <text x="118" y="136" fill="#F8FAFC" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="29" font-weight="800">
+    Hermes Agent Console
+  </text>
+  <text x="118" y="170" fill="#93C5FD" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="15" font-weight="700">
+    真实 Hermes Agent 桌面 GUI
+  </text>
 
-  <rect x="118" y="208" width="222" height="50" rx="16" fill="#34D399" fill-opacity="0.16"/>
-  <text x="146" y="240" fill="#A7F3D0" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700">+ 新建会话</text>
+  <rect x="116" y="208" width="224" height="136" rx="22" fill="#FFFFFF" fill-opacity="0.1"/>
+  <text x="138" y="240" fill="#D1FAE5" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="800">
+    RUNTIME
+  </text>
+  <text x="138" y="274" fill="#F8FAFC" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="18" font-weight="700">
+    Hermes sidecar 已就绪
+  </text>
+  <text x="138" y="304" fill="#BFDBFE" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="15">
+    Python 3.11 · Dashboard 3617
+  </text>
+  <text x="138" y="328" fill="#BFDBFE" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="15">
+    API 4388 · logs live tail
+  </text>
 
-  <text x="120" y="294" fill="#64748B" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700">RECENT SESSIONS</text>
+  <rect x="116" y="368" width="102" height="42" rx="16" fill="#0F766E"/>
+  <rect x="238" y="368" width="102" height="42" rx="16" fill="#FFFFFF" fill-opacity="0.14"/>
+  <rect x="116" y="422" width="224" height="42" rx="16" fill="#FFFFFF" fill-opacity="0.14"/>
+  <text x="150" y="395" fill="#F8FAFC" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="16" font-weight="700">
+    启动
+  </text>
+  <text x="266" y="395" fill="#F8FAFC" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="16" font-weight="700">
+    重启
+  </text>
+  <text x="160" y="449" fill="#E2E8F0" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="16" font-weight="700">
+    打开 Hermes Home / Logs
+  </text>
 
-  <rect x="118" y="318" width="222" height="78" rx="18" fill="rgba(255,255,255,0.08)"/>
-  <text x="140" y="350" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="19" font-weight="700">市场反馈整理</text>
-  <text x="140" y="376" fill="#94A3B8" font-family="Segoe UI, Arial, sans-serif" font-size="13">已附加 3 个文件 · 2 分钟前</text>
+  <text x="118" y="520" fill="#64748B" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="700">
+    RECENT LOGS
+  </text>
+  <rect x="116" y="544" width="224" height="116" rx="18" fill="#FFFFFF" fill-opacity="0.08"/>
+  <text x="136" y="572" fill="#D1FAE5" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="800">
+    dashboard.log
+  </text>
+  <text x="136" y="602" fill="#E2E8F0" font-family="Consolas, monospace" font-size="12">
+    GET /api/status 200
+  </text>
+  <text x="136" y="624" fill="#E2E8F0" font-family="Consolas, monospace" font-size="12">
+    web ui ready on 127.0.0.1
+  </text>
+  <rect x="116" y="678" width="224" height="116" rx="18" fill="#FFFFFF" fill-opacity="0.08"/>
+  <text x="136" y="706" fill="#DBEAFE" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="800">
+    gateway.log
+  </text>
+  <text x="136" y="736" fill="#E2E8F0" font-family="Consolas, monospace" font-size="12">
+    POST /v1/runs 200
+  </text>
+  <text x="136" y="758" fill="#E2E8F0" font-family="Consolas, monospace" font-size="12">
+    SSE stream connected
+  </text>
 
-  <rect x="118" y="412" width="222" height="78" rx="18" fill="rgba(255,255,255,0.05)"/>
-  <text x="140" y="444" fill="#E2E8F0" font-family="Segoe UI, Arial, sans-serif" font-size="19" font-weight="700">双语发布草稿</text>
-  <text x="140" y="470" fill="#94A3B8" font-family="Segoe UI, Arial, sans-serif" font-size="13">中文优先，附英文摘要</text>
+  <rect x="396" y="86" width="634" height="748" rx="28" fill="url(#main)" stroke="#D7E2DA"/>
+  <rect x="430" y="118" width="566" height="94" rx="22" fill="#FFFDF7"/>
+  <text x="456" y="148" fill="#0F766E" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="800">
+    SESSION
+  </text>
+  <text x="456" y="182" fill="#0F172A" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="28" font-weight="800">
+    Chat / Dashboard 双视图控制台
+  </text>
+  <text x="456" y="204" fill="#475569" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="15">
+    实时发送任务到 Hermes Gateway，接收流式响应与工具事件。
+  </text>
 
-  <rect x="118" y="506" width="222" height="78" rx="18" fill="rgba(255,255,255,0.05)"/>
-  <text x="140" y="538" fill="#E2E8F0" font-family="Segoe UI, Arial, sans-serif" font-size="19" font-weight="700">产品周报</text>
-  <text x="140" y="564" fill="#94A3B8" font-family="Segoe UI, Arial, sans-serif" font-size="13">运行状态稳定 · 可继续扩写</text>
+  <rect x="844" y="140" width="70" height="34" rx="14" fill="#0F766E"/>
+  <rect x="924" y="140" width="72" height="34" rx="14" fill="#E2E8F0"/>
+  <text x="866" y="162" fill="#F8FAFC" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="700">
+    Chat
+  </text>
+  <text x="938" y="162" fill="#334155" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="700">
+    Dash
+  </text>
 
-  <text x="120" y="638" fill="#64748B" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700">NAVIGATION</text>
-  <text x="120" y="676" fill="#E2E8F0" font-family="Segoe UI, Arial, sans-serif" font-size="17">聊天</text>
-  <text x="120" y="712" fill="#E2E8F0" font-family="Segoe UI, Arial, sans-serif" font-size="17">能力</text>
-  <text x="120" y="748" fill="#E2E8F0" font-family="Segoe UI, Arial, sans-serif" font-size="17">设置</text>
-  <text x="120" y="784" fill="#E2E8F0" font-family="Segoe UI, Arial, sans-serif" font-size="17">状态</text>
+  <rect x="430" y="236" width="566" height="98" rx="22" fill="#FFFFFF"/>
+  <rect x="454" y="260" width="58" height="28" rx="14" fill="#E2E8F0"/>
+  <text x="472" y="279" fill="#0F172A" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="800">
+    用户
+  </text>
+  <text x="454" y="308" fill="#334155" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="17">
+    请基于附件整理本周发布说明，先给中文结论，再补英文摘要。
+  </text>
 
-  <rect x="398" y="88" width="632" height="744" rx="26" fill="url(#workspace)" stroke="#D9E7DD"/>
-  <text x="438" y="142" fill="#0F172A" font-family="Segoe UI, Arial, sans-serif" font-size="32" font-weight="800">市场反馈整理</text>
-  <text x="438" y="176" fill="#475569" font-family="Segoe UI, Arial, sans-serif" font-size="16">OpenRouter · claude-sonnet · 实时流式响应</text>
-  <rect x="842" y="126" width="154" height="42" rx="21" fill="#DCFCE7"/>
-  <text x="868" y="153" fill="#166534" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="800">稳定版 v0.1.0</text>
+  <rect x="462" y="356" width="504" height="216" rx="24" fill="url(#assistant)"/>
+  <rect x="486" y="380" width="98" height="30" rx="15" fill="#BE185D" fill-opacity="0.12"/>
+  <text x="506" y="400" fill="#BE185D" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="800">
+    Assistant
+  </text>
+  <text x="486" y="438" fill="#0F172A" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="17" font-weight="700">
+    中文结论
+  </text>
+  <text x="486" y="468" fill="#0F172A" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="16">
+    1. 本周重点是把桌面 GUI 与 Hermes sidecar 的真实链路稳定下来。
+  </text>
+  <text x="486" y="496" fill="#0F172A" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="16">
+    2. Dashboard、Gateway、日志与发布资产现在都可以在本地验证。
+  </text>
+  <text x="486" y="524" fill="#0F172A" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="16">
+    3. 中文优先界面与开源发布链路是当前版本的产品完成度核心。
+  </text>
+  <text x="486" y="564" fill="#065F46" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="17" font-weight="700">
+    English summary
+  </text>
+  <text x="486" y="592" fill="#0F172A" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="16">
+    The desktop GUI now controls a real Hermes sidecar with logs, dashboard,
+  </text>
+  <text x="486" y="618" fill="#0F172A" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="16">
+    packaging, and release validation built into the workflow.
+  </text>
 
-  <rect x="430" y="216" width="552" height="104" rx="22" fill="#FFFFFF"/>
-  <rect x="452" y="240" width="62" height="30" rx="15" fill="#E2E8F0"/>
-  <text x="469" y="260" fill="#0F172A" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="800">你</text>
-  <text x="452" y="292" fill="#334155" font-family="Segoe UI, Arial, sans-serif" font-size="17">请基于附件总结本周用户反馈，先给中文结论，再补一段英文摘要。</text>
+  <rect x="430" y="604" width="566" height="74" rx="22" fill="#FFFFFF"/>
+  <rect x="452" y="626" width="78" height="30" rx="15" fill="#E2E8F0"/>
+  <text x="474" y="646" fill="#0F172A" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="800">
+    附件
+  </text>
+  <rect x="552" y="620" width="146" height="40" rx="14" fill="#F1F5F9"/>
+  <rect x="712" y="620" width="158" height="40" rx="14" fill="#F1F5F9"/>
+  <rect x="884" y="620" width="86" height="40" rx="14" fill="#F1F5F9"/>
+  <text x="578" y="646" fill="#334155" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="700">
+    release-notes.md
+  </text>
+  <text x="742" y="646" fill="#334155" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="700">
+    changelog.csv
+  </text>
+  <text x="910" y="646" fill="#334155" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="700">
+    ui.png
+  </text>
 
-  <rect x="468" y="346" width="514" height="226" rx="24" fill="url(#assistant-bubble)"/>
-  <rect x="492" y="370" width="94" height="30" rx="15" fill="#DB2777" fill-opacity="0.12"/>
-  <text x="512" y="390" fill="#BE185D" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="800">Assistant</text>
-  <text x="492" y="430" fill="#0F172A" font-family="Segoe UI, Arial, sans-serif" font-size="17" font-weight="700">中文结论</text>
-  <text x="492" y="460" fill="#0F172A" font-family="Segoe UI, Arial, sans-serif" font-size="16">1. 用户最看重稳定流式响应和安装即用的桌面体验。</text>
-  <text x="492" y="488" fill="#0F172A" font-family="Segoe UI, Arial, sans-serif" font-size="16">2. 中文默认界面和 English 切换是明显加分项。</text>
-  <text x="492" y="516" fill="#0F172A" font-family="Segoe UI, Arial, sans-serif" font-size="16">3. 本地测试、日志和诊断导出降低了早期版本的试错成本。</text>
-  <text x="492" y="556" fill="#065F46" font-family="Segoe UI, Arial, sans-serif" font-size="17" font-weight="700">English summary</text>
-  <text x="492" y="584" fill="#0F172A" font-family="Segoe UI, Arial, sans-serif" font-size="16">Users care most about reliable streaming, simple installation,</text>
-  <text x="492" y="610" fill="#0F172A" font-family="Segoe UI, Arial, sans-serif" font-size="16">Chinese-first UX, and clear local verification before release.</text>
+  <rect x="430" y="708" width="566" height="90" rx="22" fill="#FFFFFF"/>
+  <rect x="452" y="732" width="108" height="42" rx="16" fill="#E2E8F0"/>
+  <text x="482" y="759" fill="#0F172A" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="16" font-weight="700">
+    添加附件
+  </text>
+  <rect x="578" y="726" width="252" height="54" rx="18" fill="#F8FAFC" stroke="#D7E3D9"/>
+  <text x="604" y="758" fill="#64748B" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="16">
+    继续输入任务，Enter 发送到 Hermes
+  </text>
+  <rect x="850" y="732" width="116" height="42" rx="16" fill="#0F766E"/>
+  <text x="888" y="759" fill="#F8FAFC" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="16" font-weight="800">
+    发送
+  </text>
 
-  <rect x="430" y="604" width="552" height="76" rx="22" fill="#FFFFFF"/>
-  <rect x="452" y="626" width="62" height="30" rx="15" fill="#E2E8F0"/>
-  <text x="469" y="646" fill="#0F172A" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="800">附件</text>
-  <rect x="548" y="620" width="144" height="40" rx="14" fill="#F1F5F9"/>
-  <text x="574" y="646" fill="#334155" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="700">feedback.csv</text>
-  <rect x="706" y="620" width="152" height="40" rx="14" fill="#F1F5F9"/>
-  <text x="733" y="646" fill="#334155" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="700">notes.md</text>
-  <rect x="872" y="620" width="82" height="40" rx="14" fill="#F1F5F9"/>
-  <text x="893" y="646" fill="#334155" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="700">png</text>
+  <rect x="1050" y="86" width="304" height="748" rx="28" fill="url(#activity)" stroke="#D7E2DA"/>
+  <text x="1082" y="134" fill="#0F172A" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="28" font-weight="800">
+    实时事件
+  </text>
 
-  <rect x="430" y="708" width="552" height="88" rx="22" fill="#FFFFFF"/>
-  <rect x="452" y="730" width="94" height="42" rx="16" fill="#E2E8F0"/>
-  <text x="481" y="757" fill="#0F172A" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="700">附加文件</text>
-  <rect x="564" y="724" width="266" height="56" rx="18" fill="#F8FAFC" stroke="#D7E3D9"/>
-  <text x="590" y="757" fill="#64748B" font-family="Segoe UI, Arial, sans-serif" font-size="16">继续输入问题，Enter 发送</text>
-  <rect x="850" y="730" width="108" height="42" rx="16" fill="#0F766E"/>
-  <text x="884" y="757" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="800">发送</text>
+  <rect x="1082" y="170" width="240" height="82" rx="18" fill="#ECFDF5"/>
+  <text x="1104" y="198" fill="#0F766E" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="800">
+    TOOL STARTED
+  </text>
+  <text x="1104" y="224" fill="#0F172A" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="16">
+    file_search / docs/*
+  </text>
 
-  <rect x="1052" y="88" width="302" height="744" rx="26" fill="url(#panel)" stroke="#D7E3D9"/>
-  <text x="1086" y="138" fill="#0F172A" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="800">右侧摘要</text>
+  <rect x="1082" y="270" width="240" height="82" rx="18" fill="#EFF6FF"/>
+  <text x="1104" y="298" fill="#2563EB" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="800">
+    REASONING
+  </text>
+  <text x="1104" y="324" fill="#0F172A" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="16">
+    汇总版本说明与验证结果
+  </text>
 
-  <text x="1086" y="190" fill="#64748B" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700">RUNTIME</text>
-  <text x="1086" y="224" fill="#111827" font-family="Segoe UI, Arial, sans-serif" font-size="16">Hermes Agent Runtime</text>
-  <text x="1086" y="252" fill="#111827" font-family="Segoe UI, Arial, sans-serif" font-size="16">0.1.0 · upstream 0.10.0-vendored</text>
+  <rect x="1082" y="370" width="240" height="82" rx="18" fill="#FEF3C7"/>
+  <text x="1104" y="398" fill="#B45309" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="800">
+    TOOL COMPLETED
+  </text>
+  <text x="1104" y="424" fill="#0F172A" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="16">
+    docs rewrite finished
+  </text>
 
-  <text x="1086" y="314" fill="#64748B" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700">CONFIG</text>
-  <text x="1086" y="348" fill="#111827" font-family="Segoe UI, Arial, sans-serif" font-size="16">语言: 简体中文 / English</text>
-  <text x="1086" y="376" fill="#111827" font-family="Segoe UI, Arial, sans-serif" font-size="16">主题: System</text>
-  <text x="1086" y="404" fill="#111827" font-family="Segoe UI, Arial, sans-serif" font-size="16">更新: Auto enabled</text>
+  <rect x="1082" y="500" width="240" height="170" rx="20" fill="#FFFFFF"/>
+  <text x="1104" y="530" fill="#64748B" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="13" font-weight="700">
+    SIDE CAR STATUS
+  </text>
+  <text x="1104" y="564" fill="#111827" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="16">
+    Dashboard: ready
+  </text>
+  <text x="1104" y="592" fill="#111827" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="16">
+    Gateway API: ready
+  </text>
+  <text x="1104" y="620" fill="#111827" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="16">
+    SSE: connected
+  </text>
+  <text x="1104" y="648" fill="#111827" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="16">
+    Upstream: vendored 0.10.0
+  </text>
 
-  <text x="1086" y="470" fill="#64748B" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700">CAPABILITIES</text>
-  <text x="1086" y="504" fill="#111827" font-family="Segoe UI, Arial, sans-serif" font-size="16">文件理解: Available</text>
-  <text x="1086" y="532" fill="#111827" font-family="Segoe UI, Arial, sans-serif" font-size="16">图片理解: Available</text>
-  <text x="1086" y="560" fill="#111827" font-family="Segoe UI, Arial, sans-serif" font-size="16">拖拽附件: Available</text>
-  <text x="1086" y="588" fill="#111827" font-family="Segoe UI, Arial, sans-serif" font-size="16">自动更新: Available</text>
-
-  <text x="1086" y="654" fill="#64748B" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700">SHIPPING</text>
-  <text x="1086" y="688" fill="#111827" font-family="Segoe UI, Arial, sans-serif" font-size="16">Windows: setup + portable</text>
-  <text x="1086" y="716" fill="#111827" font-family="Segoe UI, Arial, sans-serif" font-size="16">macOS: dmg + zip</text>
-  <text x="1086" y="744" fill="#111827" font-family="Segoe UI, Arial, sans-serif" font-size="16">Linux: AppImage + tar.gz</text>
+  <rect x="1082" y="696" width="240" height="100" rx="20" fill="#0F172A"/>
+  <text x="1104" y="728" fill="#BAE6FD" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="14" font-weight="800">
+    SHIPPING
+  </text>
+  <text x="1104" y="756" fill="#F8FAFC" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="16">
+    setup.exe · portable.exe
+  </text>
+  <text x="1104" y="782" fill="#F8FAFC" font-family="Segoe UI, PingFang SC, Microsoft YaHei, sans-serif" font-size="16">
+    dmg · zip · AppImage · tar.gz
+  </text>
 </svg>

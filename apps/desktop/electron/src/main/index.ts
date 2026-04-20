@@ -1,10 +1,9 @@
 import { existsSync } from 'node:fs'
-import { app, BrowserWindow, ipcMain, safeStorage, shell } from 'electron'
+import { app, BrowserWindow, ipcMain, shell } from 'electron'
 import { fileURLToPath } from 'node:url'
 import { dirname, join, resolve } from 'node:path'
 
-import { startAdapterServer } from '@product/adapter'
-import { createRuntimeManager } from '@product/runtime-manager'
+import { createRuntimeManager, type RuntimeManager } from '@product/runtime-manager'
 import { DEFAULT_BRAND, type DesktopEnvironment } from '@product/shared'
 
 const currentFile = fileURLToPath(import.meta.url)
@@ -12,8 +11,7 @@ const currentDir = dirname(currentFile)
 const APP_ID = 'com.laolaoshiren.hermesagentdesktop'
 
 let mainWindow: BrowserWindow | null = null
-let environment: DesktopEnvironment | null = null
-let shutdownAdapter: (() => Promise<void>) | null = null
+let runtimeManager: RuntimeManager | null = null
 const projectRoot = resolve(currentDir, '../../../../')
 
 function resolveWindowIconPath() {
@@ -25,15 +23,19 @@ function resolveWindowIconPath() {
   return existsSync(iconPath) ? iconPath : undefined
 }
 
-async function createDesktopEnvironment() {
+async function ensureRuntimeManager() {
+  if (runtimeManager) {
+    return runtimeManager
+  }
+
   app.setName(DEFAULT_BRAND.productName)
   app.setAppUserModelId(APP_ID)
 
-  const runtimeManager = await createRuntimeManager({
+  runtimeManager = await createRuntimeManager({
     brand: DEFAULT_BRAND,
     appVersion: app.getVersion(),
-    secureStorageAvailable: safeStorage.isEncryptionAvailable(),
-    autoUpdateSupported: true,
+    projectRoot,
+    resourcesRoot: process.resourcesPath,
     basePaths: {
       configRoot: app.getPath('appData'),
       dataRoot: app.getPath('userData'),
@@ -42,41 +44,34 @@ async function createDesktopEnvironment() {
     }
   })
 
-  await runtimeManager.start()
+  return runtimeManager
+}
 
-  const adapter = await startAdapterServer({
-    appVersion: app.getVersion(),
-    runtimeManager
-  })
-
-  shutdownAdapter = adapter.close
-
-  environment = {
-    adapterBaseUrl: adapter.baseUrl,
+async function toDesktopEnvironment(): Promise<DesktopEnvironment> {
+  const manager = await ensureRuntimeManager()
+  return {
     productName: DEFAULT_BRAND.productName,
     productVersion: app.getVersion(),
-    paths: {
-      dataDir: runtimeManager.paths.dataDir,
-      logsDir: runtimeManager.paths.logsDir
-    }
+    locale: manager.settings.locale,
+    defaultPage: 'chat',
+    settings: manager.settings,
+    runtime: manager.getSnapshot()
   }
 }
 
 async function createWindow() {
-  if (!environment) {
-    await createDesktopEnvironment()
-  }
+  await ensureRuntimeManager()
 
   const preloadPath = resolve(currentDir, '../preload/index.js')
   const frontendEntry = resolve(currentDir, '../../../frontend/dist/index.html')
   const windowIcon = resolveWindowIconPath()
 
   mainWindow = new BrowserWindow({
-    width: 1440,
-    height: 940,
+    width: 1480,
+    height: 960,
     minWidth: 1120,
     minHeight: 760,
-    backgroundColor: '#eef2e6',
+    backgroundColor: '#f2ecdf',
     title: DEFAULT_BRAND.productName,
     ...(windowIcon ? { icon: windowIcon } : {}),
     webPreferences: {
@@ -89,22 +84,51 @@ async function createWindow() {
   await mainWindow.loadFile(frontendEntry)
 }
 
-ipcMain.handle('desktop:get-environment', async () => environment)
-ipcMain.handle('desktop:open-data-directory', async () => {
-  if (environment) {
-    await shell.openPath(environment.paths.dataDir)
-  }
+ipcMain.handle('desktop:get-environment', async () => toDesktopEnvironment())
+ipcMain.handle('desktop:get-runtime-snapshot', async () => {
+  const manager = await ensureRuntimeManager()
+  return manager.getSnapshot()
+})
+ipcMain.handle('desktop:start-runtime', async () => {
+  const manager = await ensureRuntimeManager()
+  return { snapshot: await manager.start() }
+})
+ipcMain.handle('desktop:stop-runtime', async () => {
+  const manager = await ensureRuntimeManager()
+  return { snapshot: await manager.stop() }
+})
+ipcMain.handle('desktop:restart-runtime', async () => {
+  const manager = await ensureRuntimeManager()
+  return { snapshot: await manager.restart() }
+})
+ipcMain.handle('desktop:get-log-tail', async (_event, lineCount?: number) => {
+  const manager = await ensureRuntimeManager()
+  return manager.getLogTail(lineCount)
+})
+ipcMain.handle('desktop:launch-hermes-command', async (_event, command) => {
+  const manager = await ensureRuntimeManager()
+  await manager.launchCompanionCommand(command)
+  return { command }
+})
+ipcMain.handle('desktop:open-hermes-home', async () => {
+  const manager = await ensureRuntimeManager()
+  await shell.openPath(manager.paths.hermesHome)
 })
 ipcMain.handle('desktop:open-logs-directory', async () => {
-  if (environment) {
-    await shell.openPath(environment.paths.logsDir)
-  }
+  const manager = await ensureRuntimeManager()
+  await shell.openPath(manager.paths.logsDir)
 })
 ipcMain.handle('desktop:open-open-source-notes', async () => {
   await shell.openPath(resolve(projectRoot, 'THIRD_PARTY_NOTICES.md'))
 })
 
 app.whenReady().then(async () => {
+  await ensureRuntimeManager()
+  const manager = runtimeManager
+  if (manager) {
+    void manager.start().catch(() => undefined)
+  }
+
   await createWindow()
 
   app.on('activate', async () => {
@@ -121,8 +145,7 @@ app.on('window-all-closed', () => {
 })
 
 app.on('before-quit', async () => {
-  if (shutdownAdapter) {
-    await shutdownAdapter()
-    shutdownAdapter = null
+  if (runtimeManager) {
+    await runtimeManager.stop()
   }
 })

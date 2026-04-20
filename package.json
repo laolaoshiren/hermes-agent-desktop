@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "main": "apps/desktop/electron/dist/main/index.js",
-  "description": "Chinese-first open-source desktop workspace built on a Hermes-agent-oriented architecture.",
+  "description": "Chinese-first open-source desktop GUI for the real Hermes Agent runtime.",
   "author": {
     "name": "老实人"
   },
@@ -21,7 +21,8 @@
     "packages/adapter"
   ],
   "scripts": {
-    "build": "npm run build --workspace @product/shared && npm run build --workspace @product/runtime-manager && npm run build --workspace @product/adapter && npm run build --workspace @product/frontend && npm run build --workspace @product/desktop-electron",
+    "prepare:runtime": "node scripts/bootstrap-hermes-runtime.mjs && node scripts/build-hermes-web.mjs",
+    "build": "npm run prepare:runtime && npm run build --workspace @product/shared && npm run build --workspace @product/runtime-manager && npm run build --workspace @product/frontend && npm run build --workspace @product/desktop-electron",
     "start": "npm run build && npm run start --workspace @product/desktop-electron",
     "smoke": "node scripts/smoke-direct-provider.mjs",
     "test:e2e": "node scripts/e2e-local-product.mjs",
@@ -34,7 +35,6 @@
     "dist:linux": "rimraf release && npm run build && electron-builder --linux AppImage tar.gz --publish never"
   },
   "dependencies": {
-    "@product/adapter": "0.1.0",
     "@product/runtime-manager": "0.1.0",
     "@product/shared": "0.1.0"
   },
@@ -49,9 +49,13 @@
   },
   "build": {
     "appId": "com.laolaoshiren.hermesagentdesktop",
-    "productName": "Hermes Agent Desktop",
+    "productName": "Hermes Agent Console",
     "electronVersion": "37.2.0",
     "asar": true,
+    "asarUnpack": [
+      "runtime/**",
+      "vendor/**"
+    ],
     "npmRebuild": false,
     "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
     "directories": {
@@ -61,19 +65,32 @@
     "files": [
       "apps/desktop/electron/dist/**/*",
       "apps/desktop/frontend/dist/**/*",
-      "packages/adapter/dist/**/*",
       "packages/runtime-manager/dist/**/*",
       "packages/shared/dist/**/*",
-      "packages/adapter/package.json",
       "packages/runtime-manager/package.json",
       "packages/shared/package.json",
       "node_modules/**/*",
       "package.json",
+      "runtime/**/*",
+      "vendor/**/*",
       "!**/*.map",
       "!docs/**",
       "!scripts/**",
-      "!vendor/**",
-      "!runtime/**",
+      "!vendor/hermes-agent/.github/**",
+      "!vendor/hermes-agent/.plans/**",
+      "!vendor/hermes-agent/.product-data/**",
+      "!vendor/hermes-agent/build/**",
+      "!vendor/hermes-agent/docker/**",
+      "!vendor/hermes-agent/hermes_agent.egg-info/**",
+      "!vendor/hermes-agent/nix/**",
+      "!vendor/hermes-agent/packaging/**",
+      "!vendor/hermes-agent/plans/**",
+      "!vendor/hermes-agent/tests/**",
+      "!vendor/hermes-agent/ui-tui/**",
+      "!vendor/hermes-agent/web/node_modules/**",
+      "!vendor/hermes-agent/web/public/**",
+      "!vendor/hermes-agent/web/src/**",
+      "!vendor/hermes-agent/website/**",
       "!node_modules/.cache/**"
     ],
     "publish": [

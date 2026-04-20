@@ -30,6 +30,25 @@ async function requestJson(url) {
   return response.json()
 }
 
+async function requestText(url) {
+  const headers = url.startsWith('https://api.github.com')
+    ? buildHeaders()
+    : {
+        'User-Agent': 'hermes-agent-desktop-verifier'
+      }
+
+  const response = await fetch(url, {
+    headers,
+    redirect: 'follow'
+  })
+
+  if (!response.ok) {
+    throw new Error(`Request failed for ${url}: ${response.status} ${await response.text()}`)
+  }
+
+  return response.text()
+}
+
 async function requestReachable(url) {
   const headers = url.startsWith('https://api.github.com')
     ? buildHeaders()
@@ -73,11 +92,125 @@ function findSuccessfulRun(payload, label) {
   return run
 }
 
+function escapeRegex(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+function extractReleaseAssetsFromHtml(html) {
+  const pattern = new RegExp(
+    `/${escapeRegex(owner)}/${escapeRegex(repo)}/releases/download/${escapeRegex(tag)}/([^"'?#\\s<]+)`,
+    'g'
+  )
+  const assetNames = new Set()
+
+  for (const match of html.matchAll(pattern)) {
+    assetNames.add(decodeURIComponent(match[1]))
+  }
+
+  return [...assetNames]
+}
+
+function findAssetName(assetNames, predicate, label) {
+  const asset = assetNames.find(predicate)
+  assert.ok(asset, `Missing release asset: ${label}`)
+  return asset
+}
+
+async function assertBadgePassing(url, label) {
+  const badge = await requestText(url)
+  assert.match(badge, /<title>.*passing/i, `${label} badge is not passing`)
+  return url
+}
+
+async function verifyPublicFallback() {
+  const repoUrl = `https://github.com/${owner}/${repo}`
+  const releaseUrl = `${repoUrl}/releases/tag/${tag}`
+  const expandedAssetsUrl = `${repoUrl}/releases/expanded_assets/${tag}`
+
+  await requestReachable(repoUrl)
+  await requestReachable(releaseUrl)
+
+  const assetsHtml = await requestText(expandedAssetsUrl)
+  const assetNames = extractReleaseAssetsFromHtml(assetsHtml)
+  assert.ok(assetNames.length > 0, 'No release assets found on expanded assets page')
+
+  const requiredAssets = [
+    findAssetName(assetNames, (asset) => asset.includes('setup') && asset.endsWith('.exe'), 'Windows setup'),
+    findAssetName(
+      assetNames,
+      (asset) => asset.includes('portable') && asset.endsWith('.exe'),
+      'Windows portable'
+    ),
+    findAssetName(assetNames, (asset) => asset.endsWith('.dmg'), 'macOS dmg'),
+    findAssetName(assetNames, (asset) => asset.endsWith('.zip'), 'macOS zip'),
+    findAssetName(assetNames, (asset) => asset.endsWith('.AppImage'), 'Linux AppImage'),
+    findAssetName(assetNames, (asset) => asset.endsWith('.tar.gz'), 'Linux tar.gz')
+  ]
+
+  for (const asset of requiredAssets) {
+    await requestReachable(`${repoUrl}/releases/download/${tag}/${asset}`)
+  }
+
+  const readmeMedia = [
+    'docs/media/hermes-agent-desktop-banner.svg',
+    'docs/media/hermes-agent-desktop-highlights.svg',
+    'docs/media/hermes-agent-desktop-ui.svg'
+  ]
+
+  for (const mediaPath of readmeMedia) {
+    await requestReachable(`https://raw.githubusercontent.com/${owner}/${repo}/main/${mediaPath}`)
+  }
+
+  const ciBadge = await assertBadgePassing(
+    `${repoUrl}/actions/workflows/ci.yml/badge.svg?branch=main`,
+    'CI'
+  )
+  const releaseBadge = await assertBadgePassing(
+    `${repoUrl}/actions/workflows/release.yml/badge.svg`,
+    'Release'
+  )
+
+  console.log(
+    JSON.stringify(
+      {
+        repository: repoUrl,
+        release: releaseUrl,
+        verifiedTag: tag,
+        assets: requiredAssets,
+        workflows: {
+          ci: {
+            badge: ciBadge,
+            conclusion: 'passing'
+          },
+          release: {
+            badge: releaseBadge,
+            conclusion: 'passing'
+          }
+        },
+        verificationMode: 'public-fallback'
+      },
+      null,
+      2
+    )
+  )
+}
+
 async function main() {
   const apiBase = 'https://api.github.com'
   const repoBase = `${apiBase}/repos/${owner}/${repo}`
 
-  const repoInfo = await requestJson(repoBase)
+  let repoInfo
+  try {
+    repoInfo = await requestJson(repoBase)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    if (!token && message.includes('rate limit exceeded')) {
+      await verifyPublicFallback()
+      return
+    }
+    throw error
+  }
+
   assert.equal(repoInfo.name, repo)
   assert.equal(repoInfo.private, false)
   assert.equal(repoInfo.archived, false)

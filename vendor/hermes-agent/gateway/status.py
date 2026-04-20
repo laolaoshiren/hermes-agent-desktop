@@ -53,6 +53,48 @@ def _utc_now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+def _windows_process_exists(pid: int) -> bool:
+    """Best-effort PID existence check for native Windows."""
+    try:
+        result = subprocess.run(
+            ["tasklist", "/FI", f"PID eq {pid}"],
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+    except (FileNotFoundError, OSError, subprocess.SubprocessError):
+        return False
+
+    output = (result.stdout or result.stderr or "").strip().lower()
+    if result.returncode != 0 or not output:
+        return False
+
+    missing_markers = (
+        "no tasks are running",
+        "没有运行的任务",
+        "没有运行符合指定标准的任务",
+        "没有符合指定标准",
+    )
+    if any(marker in output for marker in missing_markers):
+        return False
+
+    return str(pid) in output
+
+
+def _pid_exists(pid: int) -> bool:
+    """Return True when the PID currently exists."""
+    if _IS_WINDOWS:
+        return _windows_process_exists(pid)
+
+    try:
+        os.kill(pid, 0)  # signal 0 = existence check, no actual signal sent
+        return True
+    except (ProcessLookupError, PermissionError):
+        return False
+    except OSError:
+        return False
+
+
 def terminate_pid(pid: int, *, force: bool = False) -> None:
     """Terminate a PID with platform-appropriate force semantics.
 
@@ -339,9 +381,7 @@ def acquire_scoped_lock(scope: str, identity: str, metadata: Optional[dict[str, 
 
         stale = existing_pid is None
         if not stale:
-            try:
-                os.kill(existing_pid, 0)
-            except (ProcessLookupError, PermissionError):
+            if not _pid_exists(existing_pid):
                 stale = True
             else:
                 current_start = _get_process_start_time(existing_pid)
@@ -574,9 +614,9 @@ def get_running_pid(
         _cleanup_invalid_pid_path(resolved_pid_path, cleanup_stale=cleanup_stale)
         return None
 
-    try:
-        os.kill(pid, 0)  # signal 0 = existence check, no actual signal sent
-    except (ProcessLookupError, PermissionError):
+    process_exists = _pid_exists(pid)
+
+    if not process_exists:
         _cleanup_invalid_pid_path(resolved_pid_path, cleanup_stale=cleanup_stale)
         return None
 
