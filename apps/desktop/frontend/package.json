@@ -1,13 +1,13 @@
 {
   "name": "@product/frontend",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "type": "module",
   "scripts": {
     "build": "vite build"
   },
   "dependencies": {
-    "@product/shared": "0.1.0",
+    "@product/shared": "0.1.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-markdown": "^9.1.0",
