@@ -3,7 +3,7 @@ import { spawn, type ChildProcess } from 'node:child_process'
 import { existsSync, createWriteStream, type WriteStream } from 'node:fs'
 import { mkdir, readFile } from 'node:fs/promises'
 import { createServer } from 'node:net'
-import { join, resolve, delimiter } from 'node:path'
+import { dirname, join, resolve, delimiter } from 'node:path'
 import { get } from 'node:http'
 
 import type {
@@ -155,14 +155,19 @@ function resolveRuntimeLayout(options: RuntimeManagerOptions): ResolvedRuntimeLa
 
   const pythonExecutable =
     roots
-      .map((root) =>
+      .flatMap((root) =>
         process.platform === 'win32'
-          ? join(root, 'runtime', 'python', 'python.exe')
-          : join(root, 'runtime', 'python', 'bin', 'python3')
+          ? [join(root, 'runtime', 'python', 'python.exe'), join(root, 'runtime', 'python', 'Scripts', 'python.exe')]
+          : [join(root, 'runtime', 'python', 'bin', 'python3')]
       )
       .find(fileExists) ?? join(cwd, 'runtime', 'python', 'python.exe')
 
-  const pythonRoot = resolve(pythonExecutable, '..')
+  const pythonExecutableDir = dirname(pythonExecutable)
+  const pythonRoot =
+    process.platform === 'win32' &&
+    pythonExecutableDir.toLowerCase().endsWith('\\scripts')
+      ? resolve(pythonExecutableDir, '..')
+      : pythonExecutableDir
   const sitePackagesDir =
     process.platform === 'win32'
       ? join(pythonRoot, 'Lib', 'site-packages')

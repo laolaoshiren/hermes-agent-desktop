@@ -1,16 +1,27 @@
 import { spawn } from 'node:child_process'
 import { existsSync } from 'node:fs'
-import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const isWindows = process.platform === 'win32'
 const runtimeRoot = join(root, 'runtime', 'python')
-const pythonExe = isWindows ? join(runtimeRoot, 'python.exe') : join(runtimeRoot, 'bin', 'python3')
+const downloadsRoot = join(root, '.runtime-downloads')
 const getPipScript = join(root, '.runtime-downloads', 'get-pip.py')
 const vendoredGatewayStatus = join(root, 'vendor', 'hermes-agent', 'gateway', 'status.py')
 const installedGatewayStatus = join(runtimeRoot, 'Lib', 'site-packages', 'gateway', 'status.py')
+const windowsEmbeddedPythonVersion = '3.11.9'
+const windowsEmbeddedPythonUrl = `https://www.python.org/ftp/python/${windowsEmbeddedPythonVersion}/python-${windowsEmbeddedPythonVersion}-embed-amd64.zip`
+const windowsEmbeddedPythonArchive = join(
+  downloadsRoot,
+  `python-${windowsEmbeddedPythonVersion}-embed-amd64.zip`
+)
+const pythonExeCandidates = isWindows
+  ? [join(runtimeRoot, 'python.exe'), join(runtimeRoot, 'Scripts', 'python.exe')]
+  : [join(runtimeRoot, 'bin', 'python3')]
+
+let pythonExe = resolvePythonExecutable()
 
 function commandName(command) {
   if (!isWindows) {
@@ -61,6 +72,21 @@ function run(command, args, options = {}) {
   })
 }
 
+function resolvePythonExecutable() {
+  return pythonExeCandidates.find((candidate) => existsSync(candidate)) ?? pythonExeCandidates.at(-1)
+}
+
+async function downloadFile(url, targetPath) {
+  const response = await fetch(url)
+  if (!response.ok) {
+    throw new Error(`Failed to download ${url}: ${response.status} ${response.statusText}`)
+  }
+
+  const arrayBuffer = await response.arrayBuffer()
+  await mkdir(dirname(targetPath), { recursive: true })
+  await writeFile(targetPath, Buffer.from(arrayBuffer))
+}
+
 async function ensureWindowsEmbedPathFile() {
   const pthPath = join(runtimeRoot, 'python311._pth')
   if (!existsSync(pthPath)) {
@@ -72,15 +98,50 @@ async function ensureWindowsEmbedPathFile() {
 }
 
 async function ensurePythonRuntime() {
-  if (existsSync(pythonExe)) {
+  if (existsSync(resolvePythonExecutable())) {
+    pythonExe = resolvePythonExecutable()
     return
   }
 
   if (isWindows) {
-    throw new Error(`Bundled Windows runtime is missing: ${pythonExe}`)
+    try {
+      await run('py', ['-3.11', '-m', 'venv', runtimeRoot])
+    } catch (pyLauncherError) {
+      try {
+        await run('python', ['-m', 'venv', runtimeRoot])
+      } catch (pythonError) {
+        try {
+          await rm(runtimeRoot, { recursive: true, force: true })
+          await downloadFile(windowsEmbeddedPythonUrl, windowsEmbeddedPythonArchive)
+          await mkdir(runtimeRoot, { recursive: true })
+          await run('powershell', [
+            '-NoProfile',
+            '-Command',
+            `Expand-Archive -LiteralPath '${windowsEmbeddedPythonArchive.replace(/'/g, "''")}' -DestinationPath '${runtimeRoot.replace(/'/g, "''")}' -Force`
+          ])
+        } catch (downloadError) {
+          throw new Error(
+            [
+              'Windows runtime is missing and automatic bootstrap failed.',
+              `Tried: py -3.11 -m venv ${runtimeRoot}`,
+              `Fallback: python -m venv ${runtimeRoot}`,
+              `Fallback download: ${windowsEmbeddedPythonUrl}`,
+              `py error: ${pyLauncherError instanceof Error ? pyLauncherError.message : String(pyLauncherError)}`,
+              `python error: ${pythonError instanceof Error ? pythonError.message : String(pythonError)}`,
+              `download error: ${downloadError instanceof Error ? downloadError.message : String(downloadError)}`
+            ].join('\n')
+          )
+        }
+      }
+    }
+  } else {
+    await run('python3', ['-m', 'venv', runtimeRoot])
   }
 
-  await run('python3', ['-m', 'venv', runtimeRoot])
+  pythonExe = resolvePythonExecutable()
+  if (!existsSync(pythonExe)) {
+    throw new Error(`Python runtime bootstrap succeeded but executable is still missing: ${pythonExe}`)
+  }
 }
 
 async function ensurePip() {
@@ -89,6 +150,9 @@ async function ensurePip() {
     return
   } catch {
     if (isWindows) {
+      if (!existsSync(getPipScript)) {
+        await downloadFile('https://bootstrap.pypa.io/get-pip.py', getPipScript)
+      }
       await run(pythonExe, [getPipScript])
       return
     }

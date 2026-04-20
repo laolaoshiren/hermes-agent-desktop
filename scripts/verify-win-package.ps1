@@ -97,17 +97,36 @@ try {
   $setupExe = Find-Artifact -Pattern "$productName-*-setup-*.exe"
   $portableExe = Find-Artifact -Pattern "$productName-*-portable-*.exe"
   $asarPath = Join-Path $releaseDir 'win-unpacked\resources\app.asar'
-  $unpackedRuntime = Join-Path $releaseDir 'win-unpacked\resources\app.asar.unpacked\runtime\python\python.exe'
+  $unpackedRuntimeCandidates = @(
+    (Join-Path $releaseDir 'win-unpacked\resources\app.asar.unpacked\runtime\python\python.exe'),
+    (Join-Path $releaseDir 'win-unpacked\resources\app.asar.unpacked\runtime\python\Scripts\python.exe')
+  )
+  $unpackedRuntime = $unpackedRuntimeCandidates |
+    Where-Object { Test-Path $_ } |
+    Select-Object -First 1
   $unpackedDashboard = Join-Path $releaseDir 'win-unpacked\resources\app.asar.unpacked\vendor\hermes-agent\hermes_cli\web_dist\index.html'
+  $unpackedRuntimeRoot = Join-Path $releaseDir 'win-unpacked\resources\app.asar.unpacked\runtime'
 
   if (-not (Test-Path $asarPath)) {
     throw "Missing packaged app.asar at $asarPath"
   }
-  if (-not (Test-Path $unpackedRuntime)) {
-    throw "Bundled Python runtime is missing from app.asar.unpacked: $unpackedRuntime"
+  if (-not $unpackedRuntime) {
+    throw "Bundled Python runtime is missing from app.asar.unpacked. Checked: $($unpackedRuntimeCandidates -join ', ')"
   }
   if (-not (Test-Path $unpackedDashboard)) {
     throw "Bundled Hermes dashboard assets are missing from app.asar.unpacked: $unpackedDashboard"
+  }
+
+  [string[]]$unexpectedRuntimeDirs = @()
+  if (Test-Path $unpackedRuntimeRoot) {
+    [string[]]$unexpectedRuntimeDirs = @(
+      Get-ChildItem -Path $unpackedRuntimeRoot -Directory |
+        Where-Object { $_.Name -like 'python*' -and $_.Name -ne 'python' } |
+        Select-Object -ExpandProperty FullName
+    )
+  }
+  if ($unexpectedRuntimeDirs.Count -gt 0) {
+    throw "Unexpected extra Python runtime directories were packaged: $($unexpectedRuntimeDirs -join ', ')"
   }
 
   Write-Host 'Checking packaged runtime dependency layout...'
