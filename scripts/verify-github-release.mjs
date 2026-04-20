@@ -31,19 +31,26 @@ async function requestJson(url) {
 }
 
 async function requestReachable(url) {
+  const headers = url.startsWith('https://api.github.com')
+    ? buildHeaders()
+    : {
+        'User-Agent': 'hermes-agent-desktop-verifier'
+      }
+
   let response = await fetch(url, {
     method: 'HEAD',
     redirect: 'follow',
-    headers: buildHeaders()
+    headers
   })
 
   if (response.status === 405) {
     response = await fetch(url, {
       method: 'GET',
       redirect: 'follow',
-      headers: buildHeaders({
+      headers: {
+        ...headers,
         Range: 'bytes=0-0'
-      })
+      }
     })
   }
 
