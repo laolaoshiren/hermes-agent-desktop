@@ -1,0 +1,20 @@
+{
+  "name": "@product/adapter",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "dependencies": {
+    "@product/runtime-manager": "0.1.0",
+    "@product/shared": "0.1.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "jszip": "^3.10.1"
+  },
+  "scripts": {
+    "build": "rimraf dist && tsc -p tsconfig.json"
+  }
+}

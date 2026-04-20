@@ -1,0 +1,25 @@
+{
+  "name": "desktop-product-workspace",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/desktop/frontend",
+    "apps/desktop/electron",
+    "packages/shared",
+    "packages/runtime-manager",
+    "packages/adapter"
+  ],
+  "scripts": {
+    "build": "npm run build --workspace @product/shared && npm run build --workspace @product/runtime-manager && npm run build --workspace @product/adapter && npm run build --workspace @product/frontend && npm run build --workspace @product/desktop-electron",
+    "start": "npm run build && npm run start --workspace @product/desktop-electron",
+    "smoke": "node scripts/smoke-direct-provider.mjs"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.0.0",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.9.3"
+  }
+}
