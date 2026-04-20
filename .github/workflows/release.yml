@@ -21,9 +21,8 @@ jobs:
               release/*.exe
               release/latest.yml
           - os: macos-latest
-            publish_args: --mac dmg zip
+            publish_args: --mac zip
             asset_glob: |
-              release/*.dmg
               release/*.zip
           - os: ubuntu-latest
             publish_args: --linux AppImage tar.gz
