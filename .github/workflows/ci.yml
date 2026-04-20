@@ -5,8 +5,17 @@ on:
   pull_request:
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  validate:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            verify_windows_package: false
+          - os: windows-latest
+            verify_windows_package: true
+
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout
@@ -26,3 +35,11 @@ jobs:
 
       - name: Smoke Test
         run: npm run smoke
+
+      - name: End-to-End Product Test
+        run: npm run test:e2e
+
+      - name: Verify Windows Package
+        if: matrix.verify_windows_package
+        shell: pwsh
+        run: ./scripts/verify-win-package.ps1

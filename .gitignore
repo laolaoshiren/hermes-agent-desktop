@@ -7,4 +7,6 @@ Thumbs.db
 runtime/python
 .smoke-data
 release
+.package-verify-release*
 *.log
+.test-install*

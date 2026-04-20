@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs'
 import { app, BrowserWindow, ipcMain, safeStorage, shell } from 'electron'
 import { fileURLToPath } from 'node:url'
 import { dirname, join, resolve } from 'node:path'
@@ -8,14 +9,25 @@ import { DEFAULT_BRAND, type DesktopEnvironment } from '@product/shared'
 
 const currentFile = fileURLToPath(import.meta.url)
 const currentDir = dirname(currentFile)
+const APP_ID = 'com.laolaoshiren.hermesagentdesktop'
 
 let mainWindow: BrowserWindow | null = null
 let environment: DesktopEnvironment | null = null
 let shutdownAdapter: (() => Promise<void>) | null = null
 const projectRoot = resolve(currentDir, '../../../../')
 
+function resolveWindowIconPath() {
+  if (process.platform === 'darwin') {
+    return undefined
+  }
+
+  const iconPath = resolve(projectRoot, 'build', 'icon.png')
+  return existsSync(iconPath) ? iconPath : undefined
+}
+
 async function createDesktopEnvironment() {
   app.setName(DEFAULT_BRAND.productName)
+  app.setAppUserModelId(APP_ID)
 
   const runtimeManager = await createRuntimeManager({
     brand: DEFAULT_BRAND,
@@ -57,6 +69,7 @@ async function createWindow() {
 
   const preloadPath = resolve(currentDir, '../preload/index.js')
   const frontendEntry = resolve(currentDir, '../../../frontend/dist/index.html')
+  const windowIcon = resolveWindowIconPath()
 
   mainWindow = new BrowserWindow({
     width: 1440,
@@ -65,6 +78,7 @@ async function createWindow() {
     minHeight: 760,
     backgroundColor: '#eef2e6',
     title: DEFAULT_BRAND.productName,
+    ...(windowIcon ? { icon: windowIcon } : {}),
     webPreferences: {
       preload: preloadPath,
       contextIsolation: true,

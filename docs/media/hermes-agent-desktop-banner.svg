@@ -1,56 +1,57 @@
 <svg width="1280" height="640" viewBox="0 0 1280 640" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="bg" x1="88" y1="56" x2="1180" y2="592" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#0B1220"/>
-      <stop offset="0.52" stop-color="#101D32"/>
-      <stop offset="1" stop-color="#173B3B"/>
+    <linearGradient id="bg" x1="80" y1="52" x2="1168" y2="596" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#08111F"/>
+      <stop offset="0.55" stop-color="#102238"/>
+      <stop offset="1" stop-color="#11403D"/>
     </linearGradient>
-    <linearGradient id="accent" x1="148" y1="122" x2="522" y2="406" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#34D399"/>
-      <stop offset="1" stop-color="#60A5FA"/>
+    <linearGradient id="accent" x1="110" y1="446" x2="1010" y2="446" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#22C55E"/>
+      <stop offset="1" stop-color="#38BDF8"/>
     </linearGradient>
-    <linearGradient id="panel" x1="812" y1="134" x2="1102" y2="474" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#13263E"/>
-      <stop offset="1" stop-color="#0E1726"/>
+    <linearGradient id="card" x1="808" y1="130" x2="1124" y2="494" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#11253F"/>
+      <stop offset="1" stop-color="#0D1726"/>
     </linearGradient>
   </defs>
-  <rect x="24" y="24" width="1232" height="592" rx="36" fill="url(#bg)"/>
-  <rect x="24" y="24" width="1232" height="592" rx="36" stroke="rgba(255,255,255,0.08)"/>
-  <circle cx="1018" cy="106" r="112" fill="#1D4ED8" fill-opacity="0.18"/>
-  <circle cx="1136" cy="526" r="148" fill="#10B981" fill-opacity="0.14"/>
-  <circle cx="172" cy="540" r="124" fill="#F59E0B" fill-opacity="0.08"/>
 
-  <rect x="88" y="78" width="202" height="40" rx="20" fill="rgba(255,255,255,0.08)"/>
-  <text x="109" y="104" fill="#C7D2FE" font-family="Segoe UI, Arial, sans-serif" font-size="19" font-weight="700">Open Source • Hermes SEO</text>
+  <rect x="24" y="24" width="1232" height="592" rx="34" fill="url(#bg)"/>
+  <rect x="24.5" y="24.5" width="1231" height="591" rx="33.5" stroke="rgba(255,255,255,0.08)"/>
 
-  <text x="88" y="192" fill="white" font-family="Segoe UI, Arial, sans-serif" font-size="68" font-weight="800">Hermes Agent Desktop</text>
-  <text x="88" y="246" fill="#A5B4FC" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="600">Chinese-first desktop workspace for the Hermes agent ecosystem</text>
+  <circle cx="1058" cy="112" r="110" fill="#2563EB" fill-opacity="0.16"/>
+  <circle cx="1140" cy="540" r="148" fill="#10B981" fill-opacity="0.12"/>
+  <circle cx="140" cy="532" r="124" fill="#F59E0B" fill-opacity="0.08"/>
 
-  <text x="88" y="322" fill="#D1D5DB" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="500">针对中文用户优先设计，支持 English fallback，保留 Hermes 架构边界，</text>
-  <text x="88" y="358" fill="#D1D5DB" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="500">当前版本已支持真实流式模型调用、会话持久化、附件处理与 GitHub 开源发布。</text>
+  <rect x="88" y="80" width="242" height="40" rx="20" fill="rgba(255,255,255,0.08)"/>
+  <text x="112" y="106" fill="#BFDBFE" font-family="Segoe UI, Arial, sans-serif" font-size="18" font-weight="700">Open Source • Hermes Ecosystem • Desktop</text>
 
-  <rect x="88" y="412" width="190" height="52" rx="26" fill="url(#accent)"/>
-  <text x="129" y="446" fill="#06131B" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="800">v0.1.0 Ready</text>
+  <text x="88" y="190" fill="white" font-family="Segoe UI, Arial, sans-serif" font-size="66" font-weight="800">Hermes Agent Desktop</text>
+  <text x="88" y="244" fill="#A5B4FC" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="600">Chinese-first open-source workspace for the Hermes agent ecosystem</text>
 
-  <rect x="296" y="412" width="192" height="52" rx="26" fill="rgba(255,255,255,0.08)"/>
-  <text x="339" y="446" fill="#F9FAFB" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700">Win • macOS • Linux</text>
+  <text x="88" y="322" fill="#E5E7EB" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="500">真实流式对话、多 provider 接入、桌面会话持久化、GitHub Release 交付，</text>
+  <text x="88" y="358" fill="#E5E7EB" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="500">当前版本面向桌面产品完整度，后续继续深化 Hermes 原生 runtime bridge。</text>
 
-  <rect x="506" y="412" width="180" height="52" rx="26" fill="rgba(255,255,255,0.08)"/>
-  <text x="553" y="446" fill="#F9FAFB" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700">MIT License</text>
+  <rect x="88" y="414" width="626" height="64" rx="32" fill="rgba(255,255,255,0.06)"/>
+  <rect x="96" y="422" width="204" height="48" rx="24" fill="url(#accent)"/>
+  <text x="138" y="454" fill="#03141B" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="800">v0.1.0 Shipping</text>
+  <text x="338" y="454" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="23" font-weight="700">Win • macOS • Linux • MIT</text>
 
-  <rect x="784" y="116" width="402" height="408" rx="28" fill="url(#panel)" stroke="rgba(255,255,255,0.08)"/>
-  <rect x="814" y="152" width="112" height="22" rx="11" fill="rgba(52,211,153,0.16)"/>
-  <text x="838" y="168" fill="#86EFAC" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700">LIVE STREAM</text>
-  <text x="814" y="214" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="700">Hermes Agent Desktop</text>
-  <text x="814" y="244" fill="#94A3B8" font-family="Segoe UI, Arial, sans-serif" font-size="16">Chat • Attachments • Settings • Diagnostics</text>
+  <rect x="790" y="118" width="404" height="406" rx="28" fill="url(#card)" stroke="rgba(255,255,255,0.08)"/>
 
-  <rect x="814" y="278" width="342" height="70" rx="18" fill="rgba(255,255,255,0.05)"/>
-  <text x="836" y="306" fill="#E2E8F0" font-family="Segoe UI, Arial, sans-serif" font-size="15" font-weight="700">User</text>
-  <text x="836" y="332" fill="#CBD5E1" font-family="Segoe UI, Arial, sans-serif" font-size="15">请帮我把这份需求整理成发布说明，并保留英文切换。</text>
+  <rect x="818" y="150" width="140" height="24" rx="12" fill="rgba(34,197,94,0.16)"/>
+  <text x="846" y="167" fill="#86EFAC" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700">DESKTOP PRODUCT</text>
 
-  <rect x="854" y="366" width="302" height="108" rx="18" fill="rgba(96,165,250,0.16)"/>
-  <text x="876" y="394" fill="#BFDBFE" font-family="Segoe UI, Arial, sans-serif" font-size="15" font-weight="700">Assistant</text>
-  <text x="876" y="420" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="15">已整理为：</text>
-  <text x="876" y="446" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="15">1. 中文主界面，设置可切英文</text>
-  <text x="876" y="470" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="15">2. GitHub 开源发布，保留 Hermes 命名</text>
+  <text x="818" y="220" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="800">What ships in v0.1.0</text>
+
+  <rect x="818" y="258" width="348" height="72" rx="18" fill="rgba(255,255,255,0.05)"/>
+  <text x="842" y="286" fill="#60A5FA" font-family="Segoe UI, Arial, sans-serif" font-size="15" font-weight="700">Direct Provider Mode</text>
+  <text x="842" y="314" fill="#E2E8F0" font-family="Segoe UI, Arial, sans-serif" font-size="15">OpenAI, OpenRouter, Anthropic, Ollama, OpenAI-compatible</text>
+
+  <rect x="818" y="344" width="348" height="72" rx="18" fill="rgba(255,255,255,0.05)"/>
+  <text x="842" y="372" fill="#34D399" font-family="Segoe UI, Arial, sans-serif" font-size="15" font-weight="700">Desktop Product Layer</text>
+  <text x="842" y="400" fill="#E2E8F0" font-family="Segoe UI, Arial, sans-serif" font-size="15">Sessions, attachments, diagnostics, updates, settings, status</text>
+
+  <rect x="818" y="430" width="348" height="72" rx="18" fill="rgba(255,255,255,0.05)"/>
+  <text x="842" y="458" fill="#FBBF24" font-family="Segoe UI, Arial, sans-serif" font-size="15" font-weight="700">GitHub Delivery</text>
+  <text x="842" y="486" fill="#E2E8F0" font-family="Segoe UI, Arial, sans-serif" font-size="15">CI, release workflow, multi-platform assets, open-source repo</text>
 </svg>
