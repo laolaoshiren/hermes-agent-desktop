@@ -210,7 +210,7 @@ function applyProviderAuthHeaders(headers: Headers, settings: ProviderSettings) 
   }
 
   if (settings.providerType === 'openrouter') {
-    headers.set('X-Title', 'Aurora Desk')
+    headers.set('X-Title', 'Hermes Agent Desktop')
   }
 }
 
@@ -303,8 +303,8 @@ function buildSystemPrompt(locale: Locale, enabledSkills: string[]) {
   const sections = [
     localize(
       locale,
-      '你是 Aurora Desk 的桌面 AI 助手。默认使用简体中文回答，只有在用户明确要求英文或其他语言时才切换。',
-      'You are the Aurora Desk desktop AI assistant. Default to English, but immediately switch to Chinese or another language when the user explicitly asks.'
+      '你是 Hermes Agent Desktop 的桌面 AI 助手。默认使用简体中文回答，只有在用户明确要求英文或其他语言时才切换。',
+      'You are the Hermes Agent Desktop desktop AI assistant. Default to English, but immediately switch to Chinese or another language when the user explicitly asks.'
     ),
     localize(
       locale,

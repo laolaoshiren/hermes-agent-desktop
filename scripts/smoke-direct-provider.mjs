@@ -85,7 +85,7 @@ async function requestJson(baseUrl, path, init = {}) {
 }
 
 async function main() {
-  const tempRoot = await mkdtemp(join(os.tmpdir(), 'aurora-desk-smoke-'))
+  const tempRoot = await mkdtemp(join(os.tmpdir(), 'hermes-agent-desktop-smoke-'))
   let mockServer
   let mockBaseUrl = ''
   let adapter

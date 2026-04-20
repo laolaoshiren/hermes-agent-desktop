@@ -6,4 +6,5 @@ Thumbs.db
 .runtime-downloads
 runtime/python
 .smoke-data
+release
 *.log

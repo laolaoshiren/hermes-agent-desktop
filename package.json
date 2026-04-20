@@ -1,8 +1,18 @@
 {
-  "name": "desktop-product-workspace",
+  "name": "hermes-agent-desktop",
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "main": "apps/desktop/electron/dist/main/index.js",
+  "description": "Chinese-first open-source desktop workspace built on a Hermes-agent-oriented architecture.",
+  "author": {
+    "name": "老实人"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/laolaoshiren/hermes-agent-desktop.git"
+  },
   "workspaces": [
     "apps/desktop/frontend",
     "apps/desktop/electron",
@@ -13,13 +23,88 @@
   "scripts": {
     "build": "npm run build --workspace @product/shared && npm run build --workspace @product/runtime-manager && npm run build --workspace @product/adapter && npm run build --workspace @product/frontend && npm run build --workspace @product/desktop-electron",
     "start": "npm run build && npm run start --workspace @product/desktop-electron",
-    "smoke": "node scripts/smoke-direct-provider.mjs"
+    "smoke": "node scripts/smoke-direct-provider.mjs",
+    "test:local": "npm run build && npm run smoke",
+    "dist": "rimraf release && npm run build && electron-builder --publish never",
+    "dist:win": "rimraf release && npm run build && electron-builder --win nsis portable --publish never",
+    "dist:mac": "rimraf release && npm run build && electron-builder --mac dmg zip --publish never",
+    "dist:linux": "rimraf release && npm run build && electron-builder --linux AppImage tar.gz --publish never"
+  },
+  "dependencies": {
+    "@product/adapter": "0.1.0",
+    "@product/runtime-manager": "0.1.0",
+    "@product/shared": "0.1.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/node": "^24.0.0",
+    "electron": "^37.2.0",
+    "electron-builder": "^26.8.1",
     "rimraf": "^6.0.1",
     "typescript": "^5.9.3"
+  },
+  "build": {
+    "appId": "com.laolaoshiren.hermesagentdesktop",
+    "productName": "Hermes Agent Desktop",
+    "electronVersion": "37.2.0",
+    "asar": true,
+    "npmRebuild": false,
+    "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "apps/desktop/electron/dist/**/*",
+      "apps/desktop/frontend/dist/**/*",
+      "packages/adapter/dist/**/*",
+      "packages/runtime-manager/dist/**/*",
+      "packages/shared/dist/**/*",
+      "packages/adapter/package.json",
+      "packages/runtime-manager/package.json",
+      "packages/shared/package.json",
+      "node_modules/**/*",
+      "package.json",
+      "!**/*.map",
+      "!**/src/**",
+      "!docs/**",
+      "!scripts/**",
+      "!vendor/**",
+      "!runtime/**",
+      "!node_modules/.cache/**"
+    ],
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "laolaoshiren",
+        "repo": "hermes-agent-desktop"
+      }
+    ],
+    "mac": {
+      "category": "public.app-category.productivity",
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "nsis": {
+      "artifactName": "${productName}-${version}-setup-${arch}.${ext}"
+    },
+    "portable": {
+      "artifactName": "${productName}-${version}-portable-${arch}.${ext}"
+    },
+    "linux": {
+      "category": "Utility",
+      "target": [
+        "AppImage",
+        "tar.gz"
+      ]
+    }
   }
 }
