@@ -79,11 +79,17 @@ const COMPANION_COMMANDS: Record<
     args: string[]
   }
 > = {
+  setup: {
+    args: ['setup']
+  },
   'chat-tui': {
     args: ['chat', '--tui']
   },
   sessions: {
     args: ['sessions', 'list']
+  },
+  'sessions-browse': {
+    args: ['sessions', 'browse']
   },
   model: {
     args: ['model']
@@ -91,11 +97,23 @@ const COMPANION_COMMANDS: Record<
   tools: {
     args: ['tools']
   },
+  skills: {
+    args: ['skills']
+  },
   auth: {
     args: ['auth']
   },
   profile: {
     args: ['profile']
+  },
+  status: {
+    args: ['status']
+  },
+  doctor: {
+    args: ['doctor']
+  },
+  cron: {
+    args: ['cron']
   },
   'gateway-setup': {
     args: ['gateway', 'setup']
@@ -671,23 +689,14 @@ export async function createRuntimeManager(options: RuntimeManagerOptions): Prom
   function launchWindowsCompanion(cliArgs: string[]) {
     const inlinePython = buildHermesInlinePython(cliArgs)
     const launcher = spawn(
-      'powershell.exe',
-      [
-        '-NoProfile',
-        '-Command',
-        'Start-Process -FilePath $env:HERMES_PYTHON -WorkingDirectory $env:HERMES_CWD -ArgumentList $env:HERMES_BOOTSTRAP_ARG'
-      ],
+      'cmd.exe',
+      ['/K', `"${runtimeLayout.pythonExecutable}" -c "${inlinePython}"`],
       {
         cwd: runtimeLayout.hermesRoot,
-        env: {
-          ...buildBaseEnvironment({}),
-          HERMES_PYTHON: runtimeLayout.pythonExecutable,
-          HERMES_CWD: runtimeLayout.hermesRoot,
-          HERMES_BOOTSTRAP_ARG: `-c "${inlinePython}"`
-        },
+        env: buildBaseEnvironment({}),
         detached: true,
         stdio: 'ignore',
-        windowsHide: true
+        windowsHide: false
       }
     )
 
@@ -728,8 +737,8 @@ export async function createRuntimeManager(options: RuntimeManagerOptions): Prom
 
     if (missingDependencies.length > 0) {
       lastError =
-        `Hermes 运行时缺少依赖：${missingDependencies.join(', ')}。` +
-        ` 请先把 Hermes Python 依赖安装到 ${runtimeLayout.sitePackagesDir}。`
+        `Hermes runtime is missing Python dependencies: ${missingDependencies.join(', ')}. ` +
+        `Install the Hermes Python dependencies into ${runtimeLayout.sitePackagesDir} first.`
       dashboardState = { ...createEmptyService(), status: 'failed', lastError }
       apiState = { ...createEmptyService(), apiKey: null, status: 'failed', lastError }
       updateOverallStatus()

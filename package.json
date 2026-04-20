@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "main": "apps/desktop/electron/dist/main/index.js",
-  "description": "Chinese-first open-source desktop GUI for the real Hermes Agent runtime.",
+  "description": "Chinese-first open-source desktop control console for the real Hermes Agent runtime.",
   "author": {
     "name": "老实人"
   },
@@ -49,7 +49,7 @@
   },
   "build": {
     "appId": "com.laolaoshiren.hermesagentdesktop",
-    "productName": "Hermes Agent Desktop",
+    "productName": "Hermes Control Desk",
     "electronVersion": "37.2.0",
     "asar": true,
     "asarUnpack": [

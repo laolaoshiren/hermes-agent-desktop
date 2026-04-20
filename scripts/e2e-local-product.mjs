@@ -109,7 +109,16 @@ async function main() {
       throw new Error(`Expected a terminal run event, got: ${JSON.stringify(events)}`)
     }
 
-    console.log(`Hermes local e2e passed with terminal event: ${terminal.event}`)
+    if (terminal.event === 'run.failed') {
+      console.log(
+        `Hermes local e2e reached run.failed on a fresh environment. ` +
+          `This means runtime and streaming work, but provider/auth setup is still required before chat can complete. ` +
+          `Error: ${terminal.error ?? 'unknown'}`
+      )
+      return
+    }
+
+    console.log('Hermes local e2e passed with terminal event: run.completed')
   } finally {
     await manager.stop()
     await new Promise((resolveDelay) => setTimeout(resolveDelay, 800))
