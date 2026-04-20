@@ -60,7 +60,27 @@ jobs:
       - name: End-to-End Product Test
         run: npm run test:e2e
 
+      - name: Build Installers (macOS with retry)
+        if: matrix.os == 'macos-latest'
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3; do
+            if npx electron-builder --publish never ${{ matrix.publish_args }}; then
+              exit 0
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              echo "macOS packaging failed after $attempt attempts."
+              exit 1
+            fi
+            echo "macOS packaging attempt $attempt failed. Retrying in 30 seconds..."
+            sleep 30
+          done
+
       - name: Build Installers
+        if: matrix.os != 'macos-latest'
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: false
         run: npx electron-builder --publish never ${{ matrix.publish_args }}

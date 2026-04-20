@@ -1,6 +1,6 @@
 {
   "name": "@product/adapter",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -8,8 +8,8 @@
     ".": "./dist/index.js"
   },
   "dependencies": {
-    "@product/runtime-manager": "0.1.1",
-    "@product/shared": "0.1.1",
+    "@product/runtime-manager": "0.1.2",
+    "@product/shared": "0.1.2",
     "cors": "^2.8.5",
     "express": "^4.21.2",
     "jszip": "^3.10.1"

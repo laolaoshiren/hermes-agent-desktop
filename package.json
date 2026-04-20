@@ -1,6 +1,6 @@
 {
   "name": "hermes-agent-desktop",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "type": "module",
   "main": "apps/desktop/electron/dist/main/index.js",
@@ -35,8 +35,8 @@
     "dist:linux": "rimraf release && npm run build && electron-builder --linux AppImage tar.gz --publish never"
   },
   "dependencies": {
-    "@product/runtime-manager": "0.1.1",
-    "@product/shared": "0.1.1"
+    "@product/runtime-manager": "0.1.2",
+    "@product/shared": "0.1.2"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",

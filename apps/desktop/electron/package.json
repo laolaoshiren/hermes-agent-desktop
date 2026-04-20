@@ -1,6 +1,6 @@
 {
   "name": "@product/desktop-electron",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "type": "module",
   "main": "dist/main/index.js",
@@ -9,8 +9,8 @@
     "start": "electron ."
   },
   "dependencies": {
-    "@product/runtime-manager": "0.1.1",
-    "@product/shared": "0.1.1",
+    "@product/runtime-manager": "0.1.2",
+    "@product/shared": "0.1.2",
     "electron": "^37.2.0"
   }
 }
